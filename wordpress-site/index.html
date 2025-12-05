@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roc4Tech Attendance - Modern Workforce Management</title>
+    <meta name="description" content="Revolutionary attendance management system with real-time tracking, GPS verification, and comprehensive analytics.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .hero-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .feature-card { transition: all 0.3s ease; }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .pulse-animation { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    </style>
+</head>
+<body class="bg-white">
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white shadow-md z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-indigo-600">Roc4Tech</h1>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#features" class="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium transition-colors">Features</a>
+                        <a href="#pricing" class="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium transition-colors">Pricing</a>
+                        <a href="#about" class="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium transition-colors">About</a>
+                        <a href="#contact" class="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium transition-colors">Contact</a>
+                        <a href="/demo" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors">Request Demo</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button class="text-gray-700 hover:text-indigo-600">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient pt-20 pb-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="text-white">
+                    <h1 class="text-5xl font-bold mb-6 leading-tight">
+                        Revolutionize Your<br>
+                        <span class="text-yellow-300">Workforce Management</span>
+                    </h1>
+                    <p class="text-xl mb-8 text-gray-200 leading-relaxed">
+                        Real-time attendance tracking with GPS verification, comprehensive leave management, 
+                        and advanced analytics. The only solution with true offline capabilities and WebSocket-powered live updates.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="/demo" class="bg-yellow-400 text-gray-900 px-8 py-3 rounded-md font-semibold hover:bg-yellow-300 transition-colors text-center">
+                            <i class="fas fa-rocket mr-2"></i>Start Free Trial
+                        </a>
+                        <a href="/features" class="border-2 border-white text-white px-8 py-3 rounded-md font-semibold hover:bg-white hover:text-indigo-600 transition-colors text-center">
+                            <i class="fas fa-play mr-2"></i>Watch Demo
+                        </a>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="bg-white rounded-2xl shadow-2xl p-8 transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-gray-800">Live Dashboard</h3>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-green-400 rounded-full pulse-animation"></div>
+                                <span class="text-sm text-gray-600">Live</span>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-700">Total Employees</span>
+                                <span class="text-2xl font-bold text-indigo-600">156</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-700">Present Today</span>
+                                <span class="text-2xl font-bold text-green-600">142</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-700">Attendance Rate</span>
+                                <span class="text-2xl font-bold text-blue-600">94.2%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Powerful Features for Modern Teams</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Everything you need to manage your workforce efficiently, from real-time tracking to advanced analytics.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Real-time Tracking -->
+                <div class="feature-card bg-white rounded-xl p-8 shadow-lg">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-satellite-dish text-indigo-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Real-time Tracking</h3>
+                    <p class="text-gray-600 mb-6">
+                        WebSocket-powered live updates ensure you always have the latest attendance information at your fingertips.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Live dashboard updates</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Instant notifications</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Real-time analytics</li>
+                    </ul>
+                </div>
+
+                <!-- GPS Verification -->
+                <div class="feature-card bg-white rounded-xl p-8 shadow-lg">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-map-marker-alt text-green-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">GPS Verification</h3>
+                    <p class="text-gray-600 mb-6">
+                        Ensure employees are where they need to be with GPS location verification on every clock-in and clock-out.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Accurate location tracking</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Geofencing capabilities</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Location history</li>
+                    </ul>
+                </div>
+
+                <!-- Offline Support -->
+                <div class="feature-card bg-white rounded-xl p-8 shadow-lg">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-wifi-slash text-purple-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Offline Capabilities</h3>
+                    <p class="text-gray-600 mb-6">
+                        Unique offline support ensures your team can clock in and out even without internet connectivity.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Local data storage</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Automatic sync when online</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>No data loss</li>
+                    </ul>
+                </div>
+
+                <!-- Leave Management -->
+                <div class="feature-card bg-white rounded-xl p-8 shadow-lg">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Leave Management</h3>
+                    <p class="text-gray-600 mb-6">
+                        Comprehensive leave request and approval system with automated balance tracking and policy enforcement.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Multiple leave types</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Automated approvals</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Balance tracking</li>
+                    </ul>
+                </div>
+
+                <!-- Advanced Analytics -->
+                <div class="feature-card bg-white rounded-xl p-8 shadow-lg">
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-line text-red-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Advanced Analytics</h3>
+                    <p class="text-gray-600 mb-6">
+                        Gain insights into workforce patterns, productivity trends, and compliance with powerful analytics and reporting.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Custom reports</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Trend analysis</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Export capabilities</li>
+                    </ul>
+                </div>
+
+                <!-- Mobile App -->
+                <div class="feature-card bg-white rounded-xl p-8 shadow-lg">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-mobile-alt text-yellow-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Mobile First</h3>
+                    <p class="text-gray-600 mb-6">
+                        Native mobile apps for iOS and Android with intuitive design and all the features your team needs on the go.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>iOS & Android apps</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Intuitive interface</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Push notifications</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Choose the perfect plan for your team. All plans include our core features with no hidden fees.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- Starter Plan -->
+                <div class="bg-gray-50 rounded-2xl p-8 shadow-lg border-2 border-transparent hover:border-indigo-500 transition-colors">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Starter</h3>
+                        <p class="text-gray-600 mb-4">Perfect for small teams</p>
+                        <div class="text-4xl font-bold text-gray-900 mb-2">$8<span class="text-lg text-gray-600">/user/month</span></div>
+                        <p class="text-sm text-gray-600">Billed annually</p>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center text-gray-700">
+                            <i class="fas fa-check text-green-500 mr-3"></i>Up to 20 users
+                        </li>
+                        <li class="flex items-center text-gray-700">
+                            <i class="fas fa-check text-green-500 mr-3"></i>Real-time tracking
+                        </li>
+                        <li class="flex items-center text-gray-700">
+                            <i class="fas fa-check text-green-500 mr-3"></i>Mobile apps
+                        </li>
+                        <li class="flex items-center text-gray-700">
+                            <i class="fas fa-check text-green-500 mr-3"></i>Basic reporting
+                        </li>
+                        <li class="flex items-center text-gray-700">
+                            <i class="fas fa-check text-green-500 mr-3"></i>Email support
+                        </li>
+                    </ul>
+                    <a href="/demo" class="block w-full bg-indigo-600 text-white text-center py-3 rounded-md font-semibold hover:bg-indigo-700 transition-colors">
+                        Start Free Trial
+                    </a>
+                </div>
+
+                <!-- Professional Plan -->
+                <div class="bg-indigo-600 rounded-2xl p-8 shadow-xl text-white relative">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-yellow-400 text-gray-900 px-4 py-1 rounded-full text-sm font-semibold">Most Popular</span>
+                    </div>
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold mb-2">Professional</h3>
+                        <p class="text-indigo-200 mb-4">For growing businesses</p>
+                        <div class="text-4xl font-bold mb-2">$6<span class="text-lg text-indigo-200">/user/month</span></div>
+                        <p class="text-sm text-indigo-200">Billed annually</p>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-yellow-400 mr-3"></i>Up to 100 users
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-yellow-400 mr-3"></i>All Starter features
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-yellow-400 mr-3"></i>Leave management
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-yellow-400 mr-3"></i>Advanced analytics
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-yellow-400 mr-3"></i>API access
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-yellow-400 mr-3"></i>Priority support
+                        </li>
+                    </ul>
+                    <a href="/demo" class="block w-full bg-yellow-400 text-gray-900 text-center py-3 rounded-md font-semibold hover:bg-yellow-300 transition-colors">
+                        Start Free Trial
+                    </a>
+                </div>
+
+                <!-- Enterprise Plan -->
+                <div class="bg-gray-50 rounded-2xl p-8 shadow-lg border-2 border-transparent hover:border-indigo-500 transition-colors">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
+                        <p class="text-gray-600 mb-4">For large organizations</p>
+                        <div class="text-4xl font-bold text-gray-900 mb-2">$4<span class="text-lg text-gray-600">/user/month</span></div>
+                        <p class="text-sm text-gray-600">Billed annually</p>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center text-gray-700">
+                            <i class="fas fa-check text-green-500 mr-3"></i>100+ users
+                        </li>
+                        <li class="flex items-center text-gray-700">
+                            <i class="fas fa-check text-green-500 mr-3"></i>All Professional features
+                        </li>
+                        <li class="flex items-center text-gray-700">
+                            <i class="fas fa-check text-green-500 mr-3"></i>Custom integrations
+                        </li>
+                        <li class="flex items-center text-gray-700">
+                            <i class="fas fa-check text-green-500 mr-3"></i>White-label options
+                        </li>
+                        <li class="flex items-center text-gray-700">
+                            <i class="fas fa-check text-green-500 mr-3"></i>Dedicated support
+                        </li>
+                        <li class="flex items-center text-gray-700">
+                            <i class="fas fa-check text-green-500 mr-3"></i>SLA guarantee
+                        </li>
+                    </ul>
+                    <a href="/contact" class="block w-full bg-gray-600 text-white text-center py-3 rounded-md font-semibold hover:bg-gray-700 transition-colors">
+                        Contact Sales
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-4xl font-bold text-gray-900 mb-6">About Roc4Tech</h2>
+                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">
+                        Founded in 2023, Roc4Tech was born from a simple observation: most attendance systems are either 
+                        too basic or overly complex. We set out to create a solution that's just right—powerful enough 
+                        for enterprise needs, yet simple enough for any team to use.
+                    </p>
+                    <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+                        Our team combines decades of experience in workforce management, software development, and 
+                        user experience design. We're passionate about building tools that make work life better for 
+                        everyone, from employees to managers to HR professionals.
+                    </p>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-indigo-600 mb-2">500+</div>
+                            <div class="text-gray-600">Happy Customers</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-indigo-600 mb-2">50K+</div>
+                            <div class="text-gray-600">Active Users</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-indigo-600 mb-2">99.9%</div>
+                            <div class="text-gray-600">Uptime</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-indigo-600 mb-2">24/7</div>
+                            <div class="text-gray-600">Support</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop" 
+                         alt="Team working together" 
+                         class="rounded-2xl shadow-2xl w-full h-96 object-cover">
+                    <div class="absolute inset-0 bg-indigo-600 opacity-10 rounded-2xl"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-indigo-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-white mb-4">Ready to Transform Your Workforce Management?</h2>
+                <p class="text-xl text-indigo-200 max-w-3xl mx-auto">
+                    Get in touch with our team to schedule a personalized demo and see how Roc4Tech can help your organization.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- Contact Form -->
+                <div class="bg-white rounded-2xl p-8 shadow-2xl">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">Request a Demo</h3>
+                    <form class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="John">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Doe">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="john@company.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                            <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Acme Corporation">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Number of Employees</label>
+                            <select class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option>Select range</option>
+                                <option>1-20 employees</option>
+                                <option>21-100 employees</option>
+                                <option>101-500 employees</option>
+                                <option>500+ employees</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                            <textarea rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Tell us about your workforce management challenges..."></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-indigo-700 transition-colors">
+                            Schedule Demo
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="text-white">
+                    <h3 class="text-2xl font-bold mb-6">Get in Touch</h3>
+                    <div class="space-y-6 mb-8">
+                        <div class="flex items-start">
+                            <div class="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <i class="fas fa-envelope text-gray-900 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-1">Email</h4>
+                                <p class="text-indigo-200">hello@roc4tech.com</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <i class="fas fa-phone text-gray-900 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-1">Phone</h4>
+                                <p class="text-indigo-200">+1 (555) 123-4567</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <i class="fas fa-map-marker-alt text-gray-900 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-1">Address</h4>
+                                <p class="text-indigo-200">123 Tech Street<br>San Francisco, CA 94105</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4 class="text-xl font-bold mb-4">Follow Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center hover:bg-indigo-400 transition-colors">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center hover:bg-indigo-400 transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center hover:bg-indigo-400 transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-2xl font-bold text-indigo-400 mb-4">Roc4Tech</h3>
+                    <p class="text-gray-400 mb-4">
+                        Revolutionizing workforce management through real-time technology and comprehensive analytics.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Product</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#pricing" class="hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="/demo" class="hover:text-white transition-colors">Demo</a></li>
+                        <li><a href="/api" class="hover:text-white transition-colors">API</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#about" class="hover:text-white transition-colors">About</a></li>
+                        <li><a href="/blog" class="hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="/careers" class="hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="/contact" class="hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="/help" class="hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="/docs" class="hover:text-white transition-colors">Documentation</a></li>
+                        <li><a href="/status" class="hover:text-white transition-colors">Status</a></li>
+                        <li><a href="/privacy" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 mb-4 md:mb-0">
+                        © 2023 Roc4Tech Attendance. All rights reserved.
+                    </p>
+                    <div class="flex space-x-6 text-gray-400">
+                        <a href="/terms" class="hover:text-white transition-colors">Terms of Service</a>
+                        <a href="/privacy" class="hover:text-white transition-colors">Privacy Policy</a>
+                        <a href="/cookies" class="hover:text-white transition-colors">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.querySelector('.md\\:hidden button');
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', function() {
+                // Add mobile menu functionality here
+                console.log('Mobile menu clicked');
+            });
+        }
+
+        // Form submission
+        const contactForm = document.querySelector('form');
+        if (contactForm) {
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // Add form submission logic here
+                alert('Thank you for your interest! We will contact you soon.');
+            });
+        }
+    </script>
+</body>
+</html>
