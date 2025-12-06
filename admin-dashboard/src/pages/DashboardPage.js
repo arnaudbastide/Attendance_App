@@ -7,6 +7,7 @@ import {
   CardContent,
   Typography,
   LinearProgress,
+  CircularProgress,
   Paper,
   List,
   ListItem,
@@ -40,6 +41,7 @@ import { format } from 'date-fns';
 
 import { authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
+import ClockInOutButton from '../components/ClockInOutButton';
 
 export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState(null);
@@ -115,7 +117,12 @@ export default function DashboardPage() {
       <Typography variant="h4" gutterBottom>
         Dashboard
       </Typography>
-      
+
+      {/* Clock In/Out Button */}
+      <Box sx={{ mb: 3 }}>
+        <ClockInOutButton />
+      </Box>
+
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         {hasRole(['admin', 'manager']) && (
@@ -128,7 +135,7 @@ export default function DashboardPage() {
             />
           </Grid>
         )}
-        
+
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Present Today"
@@ -138,7 +145,7 @@ export default function DashboardPage() {
             subtitle={`${dashboardData?.attendanceRate || 0}% attendance rate`}
           />
         </Grid>
-        
+
         {hasRole(['admin', 'manager']) && (
           <Grid item xs={12} sm={6} md={3}>
             <StatCard
@@ -149,7 +156,7 @@ export default function DashboardPage() {
             />
           </Grid>
         )}
-        
+
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Leave Requests"
@@ -180,7 +187,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={4}>
           <Card>
             <CardContent>
@@ -246,14 +253,14 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Quick Stats
               </Typography>
-              
+
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="textSecondary" gutterBottom>
                   Total Hours This Month
@@ -262,7 +269,7 @@ export default function DashboardPage() {
                   {dashboardData?.totalHoursThisMonth || 0}h
                 </Typography>
               </Box>
-              
+
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="textSecondary" gutterBottom>
                   Average Hours Per Day
@@ -271,7 +278,7 @@ export default function DashboardPage() {
                   {dashboardData?.avgHoursPerDay || 0}h
                 </Typography>
               </Box>
-              
+
               {hasRole(['admin', 'manager']) && (
                 <Box>
                   <Typography variant="body2" color="textSecondary" gutterBottom>
@@ -279,9 +286,9 @@ export default function DashboardPage() {
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Box sx={{ width: '100%', mr: 1 }}>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={parseFloat(dashboardData?.attendanceRate || 0)} 
+                      <LinearProgress
+                        variant="determinate"
+                        value={parseFloat(dashboardData?.attendanceRate || 0)}
                       />
                     </Box>
                     <Box sx={{ minWidth: 35 }}>

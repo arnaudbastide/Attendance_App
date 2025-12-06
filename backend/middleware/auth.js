@@ -4,38 +4,39 @@ const { User } = require('../models');
 
 const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
+    const authHeader = req.header('Authorization');
+    const token = authHeader ? authHeader.replace('Bearer ', '') : null;
+
     if (!token) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Access denied. No token provided.' 
+      return res.status(401).json({
+        success: false,
+        message: 'Access denied. No token provided.'
       });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findByPk(decoded.id);
-    
+
     if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid token. User not found.' 
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token. User not found.'
       });
     }
 
     if (!user.isActive) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Account is deactivated.' 
+      return res.status(401).json({
+        success: false,
+        message: 'Account is deactivated.'
       });
     }
 
     req.user = user;
     next();
   } catch (error) {
-    res.status(401).json({ 
-      success: false, 
-      message: 'Invalid token.' 
+    res.status(401).json({
+      success: false,
+      message: 'Invalid token.'
     });
   }
 };
@@ -43,9 +44,9 @@ const authMiddleware = async (req, res, next) => {
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Access denied. Insufficient permissions.' 
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Insufficient permissions.'
       });
     }
     next();

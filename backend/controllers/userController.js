@@ -1,6 +1,6 @@
 // backend/controllers/userController.js - User management controller
 const { User } = require('../models');
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 const { validateUserUpdate } = require('../utils/validators');
 
 const getUsers = async (req, res, next) => {
@@ -108,7 +108,7 @@ const updateUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const { error } = validateUserUpdate(req.body);
-    
+
     if (error) {
       return res.status(400).json({
         success: false,
@@ -217,17 +217,16 @@ const deactivateUser = async (req, res, next) => {
 
 const getDepartments = async (req, res, next) => {
   try {
-    const departments = await User.findAll({
-      attributes: [
-        [Sequelize.fn('DISTINCT', Sequelize.col('department')), 'department']
-      ],
+    const users = await User.findAll({
+      attributes: ['department'],
       where: {
         department: { [Op.not]: null }
       },
+      group: ['department'],
       order: [['department', 'ASC']]
     });
 
-    const departmentList = departments.map(d => d.department).filter(Boolean);
+    const departmentList = users.map(u => u.department).filter(Boolean);
 
     res.json({
       success: true,

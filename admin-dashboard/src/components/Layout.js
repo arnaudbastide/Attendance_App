@@ -50,10 +50,10 @@ export default function Layout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [notifications, setNotifications] = useState([]);
-  
+
   const { user, logout, hasRole } = useAuth();
   const { isConnected, subscribeToAttendanceUpdates, subscribeToLeaveRequests } = useSocket();
-  const navigate = useLocation();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const handleDrawerToggle = () => {
@@ -157,7 +157,7 @@ export default function Layout({ children }) {
           >
             <MenuIcon />
           </IconButton>
-          
+
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             {menuItems.find(item => item.path === location.pathname)?.text || 'Dashboard'}
           </Typography>
@@ -198,7 +198,7 @@ export default function Layout({ children }) {
               </Avatar>
             </IconButton>
           </Tooltip>
-          
+
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}

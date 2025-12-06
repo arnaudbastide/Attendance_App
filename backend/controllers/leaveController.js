@@ -121,17 +121,24 @@ const getMyLeaves = async (req, res, next) => {
 
 const getPendingLeaves = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, status = 'pending' } = req.query;
     const offset = (page - 1) * limit;
 
-    let whereClause = { status: 'pending' };
+    let whereClause = {};
 
-    // Managers can only see their team's leaves
+    // Filter by status if provided (empty string means all statuses)
+    if (status && status !== '') {
+      whereClause.status = status;
+    }
+
+    // Managers can only see their team's leaves, admins see all
     if (req.user.role === 'manager') {
       whereClause.userId = {
         [Op.in]: sequelize.literal(`(SELECT id FROM "Users" WHERE "managerId" = '${req.user.id}')`)
       };
     }
+    // Admin role sees all pending leaves (no additional filtering needed)
+
 
     const leaves = await Leave.findAndCountAll({
       where: whereClause,

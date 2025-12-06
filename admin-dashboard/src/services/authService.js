@@ -1,7 +1,7 @@
 // admin-dashboard/src/services/authService.js - Authentication API service
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -48,6 +48,15 @@ export const setAuthToken = (token) => {
 };
 
 export const authService = {
+  // Set auth token
+  setAuthToken(token) {
+    if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete api.defaults.headers.common['Authorization'];
+    }
+  },
+
   // Authentication
   async login(email, password) {
     try {
@@ -209,7 +218,7 @@ export const authService = {
   // Export Reports
   async exportAttendanceReport(params = {}) {
     try {
-      const response = await api.get('/reports/attendance/export', {
+      const response = await api.get('/reports/attendance', {
         params,
         responseType: 'blob'
       });
@@ -222,7 +231,7 @@ export const authService = {
 
   async exportLeaveReport(params = {}) {
     try {
-      const response = await api.get('/reports/leaves/export', {
+      const response = await api.get('/reports/leaves', {
         params,
         responseType: 'blob'
       });

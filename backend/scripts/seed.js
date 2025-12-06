@@ -12,7 +12,7 @@ const seedDatabase = async () => {
     const admin = await User.create({
       name: 'System Administrator',
       email: 'admin@roc4tech.com',
-      password: await bcrypt.hash('admin123', 10),
+      password: 'admin123',
       role: 'admin',
       department: 'IT',
       position: 'System Administrator',
@@ -23,7 +23,7 @@ const seedDatabase = async () => {
     const manager = await User.create({
       name: 'John Manager',
       email: 'john.manager@roc4tech.com',
-      password: await bcrypt.hash('manager123', 10),
+      password: 'manager123',
       role: 'manager',
       department: 'Engineering',
       position: 'Engineering Manager',
@@ -35,7 +35,7 @@ const seedDatabase = async () => {
       User.create({
         name: 'Alice Developer',
         email: 'alice@roc4tech.com',
-        password: await bcrypt.hash('employee123', 10),
+        password: 'employee123',
         role: 'employee',
         department: 'Engineering',
         position: 'Senior Developer',
@@ -45,7 +45,7 @@ const seedDatabase = async () => {
       User.create({
         name: 'Bob Designer',
         email: 'bob@roc4tech.com',
-        password: await bcrypt.hash('employee123', 10),
+        password: 'employee123',
         role: 'employee',
         department: 'Design',
         position: 'UI/UX Designer',
@@ -54,7 +54,7 @@ const seedDatabase = async () => {
       User.create({
         name: 'Charlie Analyst',
         email: 'charlie@roc4tech.com',
-        password: await bcrypt.hash('employee123', 10),
+        password: 'employee123',
         role: 'employee',
         department: 'Engineering',
         position: 'Data Analyst',
@@ -71,11 +71,14 @@ const seedDatabase = async () => {
 
     for (let i = 0; i < 30; i++) {
       const date = moment().subtract(i, 'days').format('YYYY-MM-DD');
-      
+
       for (const user of allUsers) {
-        // 90% chance of attendance
-        if (Math.random() > 0.1) {
-          const clockIn = moment(date).add(8 + Math.random() * 2, 'hours').toDate();
+        const rand = Math.random();
+
+        // 70% present, 10% late, 10% early_leave, 5% on_leave, 5% absent
+        if (rand < 0.70) {
+          // Present - normal hours
+          const clockIn = moment(date).add(8 + Math.random() * 0.5, 'hours').toDate();
           const clockOut = moment(clockIn).add(8 + Math.random() * 2, 'hours').toDate();
           const totalHours = moment(clockOut).diff(moment(clockIn), 'hours', true);
 
@@ -102,7 +105,55 @@ const seedDatabase = async () => {
               totalBreakTime: 1
             });
           }
+        } else if (rand < 0.80) {
+          // Late - clock in after 9:30 AM
+          const clockIn = moment(date).add(9.5 + Math.random() * 2, 'hours').toDate();
+          const clockOut = moment(clockIn).add(8, 'hours').toDate();
+          const totalHours = moment(clockOut).diff(moment(clockIn), 'hours', true);
+
+          const attendance = await Attendance.create({
+            userId: user.id,
+            clockIn,
+            clockOut,
+            date,
+            totalHours,
+            status: 'late',
+            isApproved: true
+          });
+
+          attendanceRecords.push(attendance);
+        } else if (rand < 0.90) {
+          // Early leave - clock out before 5 PM
+          const clockIn = moment(date).add(8, 'hours').toDate();
+          const clockOut = moment(clockIn).add(4 + Math.random() * 2, 'hours').toDate();
+          const totalHours = moment(clockOut).diff(moment(clockIn), 'hours', true);
+
+          const attendance = await Attendance.create({
+            userId: user.id,
+            clockIn,
+            clockOut,
+            date,
+            totalHours,
+            status: 'early_leave',
+            isApproved: true
+          });
+
+          attendanceRecords.push(attendance);
+        } else if (rand < 0.95) {
+          // On leave - create attendance record with on_leave status
+          const attendance = await Attendance.create({
+            userId: user.id,
+            clockIn: moment(date).add(8, 'hours').toDate(),
+            clockOut: null,
+            date,
+            totalHours: 0,
+            status: 'on_leave',
+            isApproved: true
+          });
+
+          attendanceRecords.push(attendance);
         }
+        // else: 5% chance of no record (absent - no attendance record created)
       }
     }
 

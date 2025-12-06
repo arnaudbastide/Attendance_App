@@ -1,7 +1,6 @@
 // admin-dashboard/src/pages/LeavesPage.js - Leave management page
 import React, { useState, useEffect } from 'react';
 import {
-  Box,
   Card,
   CardContent,
   Typography,
@@ -44,7 +43,7 @@ export default function LeavesPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [statusFilter, setStatusFilter] = useState('pending');
-  
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedLeave, setSelectedLeave] = useState(null);
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
@@ -122,7 +121,7 @@ export default function LeavesPage() {
       };
 
       const response = await authService.exportLeaveReport(params);
-      
+
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -131,7 +130,7 @@ export default function LeavesPage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
+
       toast.success('Leave report exported successfully');
     } catch (error) {
       toast.error('Failed to export leave report');
@@ -236,7 +235,7 @@ export default function LeavesPage() {
           <Typography variant="h6" gutterBottom>
             {statusFilter ? `${statusFilter.toUpperCase()} Leave Requests` : 'All Leave Requests'}
           </Typography>
-          
+
           <TableContainer>
             <Table>
               <TableHead>
@@ -306,7 +305,7 @@ export default function LeavesPage() {
                       >
                         <Visibility />
                       </IconButton>
-                      
+
                       {leave.status === 'pending' && hasRole(['admin', 'manager']) && (
                         <>
                           <IconButton
@@ -380,7 +379,7 @@ export default function LeavesPage() {
                   </Box>
                 </Box>
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Leave Type
@@ -389,7 +388,7 @@ export default function LeavesPage() {
                   {getLeaveTypeIcon(selectedLeave.leaveType)} {selectedLeave.leaveType.charAt(0).toUpperCase() + selectedLeave.leaveType.slice(1)}
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Status
@@ -400,7 +399,7 @@ export default function LeavesPage() {
                   sx={{ mt: 1 }}
                 />
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Start Date
@@ -409,7 +408,7 @@ export default function LeavesPage() {
                   {format(new Date(selectedLeave.startDate), 'EEEE, MMMM d, yyyy')}
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" color="textSecondary">
                   End Date
@@ -418,7 +417,7 @@ export default function LeavesPage() {
                   {format(new Date(selectedLeave.endDate), 'EEEE, MMMM d, yyyy')}
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Total Days
@@ -427,7 +426,7 @@ export default function LeavesPage() {
                   {selectedLeave.totalDays} day{selectedLeave.totalDays !== 1 ? 's' : ''}
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Requested Date
@@ -436,7 +435,7 @@ export default function LeavesPage() {
                   {format(new Date(selectedLeave.requestedAt), 'MMMM d, yyyy HH:mm')}
                 </Typography>
               </Grid>
-              
+
               {selectedLeave.approvedAt && (
                 <Grid item xs={12} md={6}>
                   <Typography variant="subtitle2" color="textSecondary">
@@ -447,7 +446,7 @@ export default function LeavesPage() {
                   </Typography>
                 </Grid>
               )}
-              
+
               <Grid item xs={12}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Reason
@@ -456,7 +455,7 @@ export default function LeavesPage() {
                   {selectedLeave.reason}
                 </Typography>
               </Grid>
-              
+
               {selectedLeave.comments && (
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" color="textSecondary">
@@ -467,7 +466,7 @@ export default function LeavesPage() {
                   </Typography>
                 </Grid>
               )}
-              
+
               {selectedLeave.attachment && (
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" color="textSecondary">

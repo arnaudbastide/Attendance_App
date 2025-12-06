@@ -10,9 +10,18 @@ const PDFDocument = require('pdfkit');
 const getAttendanceReport = async (req, res, next) => {
   try {
     const { startDate, endDate, department, format = 'json' } = req.query;
+    console.log('getAttendanceReport called:', { startDate, endDate, department, format });
+
+    // Validate required parameters
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: 'Start date and end date are required'
+      });
+    }
 
     let whereClause = {};
-    
+
     if (department) {
       whereClause.department = department;
     }
@@ -50,18 +59,27 @@ const getAttendanceReport = async (req, res, next) => {
       order: [['name', 'ASC']]
     });
 
+    // Calculate total days in the date range
+    const start = moment(startDate);
+    const end = moment(endDate);
+    const totalDaysInRange = end.diff(start, 'days') + 1;
+
     // Process data for report
     const processedData = reportData.map(user => {
-      const totalDays = user.attendances.length;
-      const presentDays = user.attendances.filter(a => a.status === 'present').length;
-      const absentDays = user.attendances.filter(a => a.status === 'absent').length;
-      const lateDays = user.attendances.filter(a => a.status === 'late').length;
-      
-      const totalHours = user.attendances.reduce((sum, a) => sum + (a.totalHours || 0), 0);
+      const attendances = (user.attendances || []).filter(a => a);
+      const totalDays = attendances.length;
+      const presentDays = attendances.filter(a => a && a.status === 'present').length;
+      const absentDays = attendances.filter(a => a && a.status === 'absent').length;
+      const lateDays = attendances.filter(a => a && a.status === 'late').length;
+
+      // If employee has no attendance records, count all days as absent
+      const actualAbsentDays = totalDays === 0 ? totalDaysInRange : absentDays;
+
+      const totalHours = attendances.reduce((sum, a) => sum + (a && a.totalHours || 0), 0);
       const averageHours = totalDays > 0 ? totalHours / totalDays : 0;
-      
-      const totalBreakTime = user.attendances.reduce((sum, a) => {
-        return sum + a.breaks.reduce((breakSum, b) => breakSum + (b.totalBreakTime || 0), 0);
+
+      const totalBreakTime = attendances.reduce((sum, a) => {
+        return sum + (a && a.breaks || []).reduce((breakSum, b) => breakSum + (b && b.totalBreakTime || 0), 0);
       }, 0);
 
       return {
@@ -69,9 +87,9 @@ const getAttendanceReport = async (req, res, next) => {
         email: user.email,
         department: user.department,
         position: user.position,
-        totalDays,
+        totalDays: totalDays === 0 ? totalDaysInRange : totalDays,
         presentDays,
-        absentDays,
+        absentDays: actualAbsentDays,
         lateDays,
         totalHours: totalHours.toFixed(2),
         averageHours: averageHours.toFixed(2),
@@ -81,14 +99,22 @@ const getAttendanceReport = async (req, res, next) => {
     });
 
     if (format === 'csv') {
-      const csvPath = path.join(__dirname, '..', 'uploads', `attendance_report_${Date.now()}.csv`);
+      console.log('Generating CSV report...');
+      console.log('Generating CSV report...');
+      const uploadDir = path.resolve(__dirname, '../uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      const csvPath = path.join(uploadDir, `attendance_report_${Date.now()}.csv`);
       const ws = fs.createWriteStream(csvPath);
-      
+
       csv.write(processedData, { headers: true })
         .pipe(ws)
         .on('finish', () => {
           res.download(csvPath, 'attendance_report.csv', (err) => {
             if (err) {
+              console.error('Download error:', err);
               fs.unlinkSync(csvPath);
               next(err);
             } else {
@@ -97,16 +123,21 @@ const getAttendanceReport = async (req, res, next) => {
           });
         });
     } else if (format === 'pdf') {
-      const pdfPath = path.join(__dirname, '..', 'uploads', `attendance_report_${Date.now()}.pdf`);
+      const uploadDir = path.resolve(__dirname, '../uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      const pdfPath = path.join(uploadDir, `attendance_report_${Date.now()}.pdf`);
       const doc = new PDFDocument();
-      
+
       doc.pipe(fs.createWriteStream(pdfPath));
-      
+
       doc.fontSize(20).text('Attendance Report', { align: 'center' });
       doc.moveDown();
       doc.fontSize(12).text(`Period: ${startDate} to ${endDate}`);
       doc.moveDown();
-      
+
       processedData.forEach((row, index) => {
         doc.fontSize(10);
         doc.text(`Employee: ${row.employee}`);
@@ -115,14 +146,14 @@ const getAttendanceReport = async (req, res, next) => {
         doc.text(`Present Days: ${row.presentDays}`);
         doc.text(`Attendance Rate: ${row.attendanceRate}%`);
         doc.moveDown();
-        
+
         if (index % 3 === 2) {
           doc.addPage();
         }
       });
-      
+
       doc.end();
-      
+
       doc.on('finish', () => {
         res.download(pdfPath, 'attendance_report.pdf', (err) => {
           if (err) {
@@ -203,10 +234,10 @@ const getLeaveReport = async (req, res, next) => {
           leaveTypes: {}
         };
       }
-      
+
       departmentStats[leave.department].totalLeaves++;
       departmentStats[leave.department].totalDays += leave.totalDays;
-      
+
       if (!departmentStats[leave.department].leaveTypes[leave.leaveType]) {
         departmentStats[leave.department].leaveTypes[leave.leaveType] = 0;
       }
@@ -214,9 +245,13 @@ const getLeaveReport = async (req, res, next) => {
     });
 
     if (format === 'csv') {
-      const csvPath = path.join(__dirname, '..', 'uploads', `leave_report_${Date.now()}.csv`);
+      const uploadDir = path.resolve(__dirname, '../uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const csvPath = path.join(uploadDir, `leave_report_${Date.now()}.csv`);
       const ws = fs.createWriteStream(csvPath);
-      
+
       csv.write(processedData, { headers: true })
         .pipe(ws)
         .on('finish', () => {
@@ -244,22 +279,27 @@ const getLeaveReport = async (req, res, next) => {
 
 const getDashboardStats = async (req, res, next) => {
   try {
+    console.log('--- GET DASHBOARD STATS REQUEST ---');
+    console.log('User:', req.user.id, req.user.role);
+
     const today = moment().format('YYYY-MM-DD');
     const thisMonth = moment().format('YYYY-MM');
 
     let userWhereClause = {};
-    
+
     // Authorization check
     if (req.user.role === 'manager') {
       userWhereClause.managerId = req.user.id;
     } else if (req.user.role === 'employee') {
       userWhereClause.id = req.user.id;
     }
+    console.log('UserWhereClause:', JSON.stringify(userWhereClause));
 
     // Get total employees
     const totalEmployees = await User.count({
       where: { ...userWhereClause, isActive: true }
     });
+    console.log('Total Employees Found:', totalEmployees);
 
     // Get today's attendance
     const todayAttendance = await Attendance.findAll({
@@ -274,7 +314,7 @@ const getDashboardStats = async (req, res, next) => {
       ]
     });
 
-    const presentToday = todayAttendance.filter(a => a.status === 'present').length;
+    const presentToday = todayAttendance.filter(a => ['present', 'late', 'early_leave'].includes(a.status)).length;
     const absentToday = totalEmployees - presentToday;
 
     // Get this month's stats
@@ -297,8 +337,11 @@ const getDashboardStats = async (req, res, next) => {
       ]
     });
 
-    const totalHoursThisMonth = monthAttendance.reduce((sum, a) => sum + (a.totalHours || 0), 0);
-    const avgHoursPerDay = monthAttendance.length > 0 ? totalHoursThisMonth / monthAttendance.length : 0;
+    const totalHoursThisMonth = monthAttendance.reduce((sum, a) => sum + (parseFloat(a.totalHours) || 0), 0);
+
+    // Calculate average hours per day
+    const distinctDays = [...new Set(monthAttendance.map(a => a.date))].length;
+    const avgHoursPerDay = distinctDays > 0 ? totalHoursThisMonth / distinctDays : 0;
 
     // Get pending leave requests
     const pendingLeaves = await Leave.count({
@@ -315,20 +358,15 @@ const getDashboardStats = async (req, res, next) => {
 
     // Get recent activities (last 5)
     const recentActivities = await Attendance.findAll({
-      where: {
-        date: {
-          [Op.gte]: moment().subtract(7, 'days').format('YYYY-MM-DD')
-        }
-      },
+      where: userWhereClause,
       include: [
         {
           model: User,
           as: 'user',
-          where: userWhereClause,
-          attributes: ['id', 'name', 'department']
+          attributes: ['name']
         }
       ],
-      order: [['clockIn', 'DESC']],
+      order: [['updatedAt', 'DESC']],
       limit: 5
     });
 
@@ -338,10 +376,10 @@ const getDashboardStats = async (req, res, next) => {
         totalEmployees,
         presentToday,
         absentToday,
-        totalHoursThisMonth: totalHoursThisMonth.toFixed(2),
-        avgHoursPerDay: avgHoursPerDay.toFixed(2),
         pendingLeaves,
-        attendanceRate: totalEmployees > 0 ? ((presentToday / totalEmployees) * 100).toFixed(2) : 0
+        attendanceRate: totalEmployees > 0 ? ((presentToday / totalEmployees) * 100).toFixed(0) : 0,
+        totalHoursThisMonth: Number(totalHoursThisMonth).toFixed(2),
+        avgHoursPerDay: Number(avgHoursPerDay).toFixed(2)
       },
       recentActivities
     });

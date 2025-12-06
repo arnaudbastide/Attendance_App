@@ -20,7 +20,7 @@ services:
     networks:
       - roc4tech-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-roc4tech_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-roc4tech_user} -d ${DB_NAME:-roc4tech_attendance}"]
       interval: 10s
       timeout: 5s
       retries: 5
