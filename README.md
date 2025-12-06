@@ -305,6 +305,15 @@ cd mobile-app && npm test
 - `reports/PROJECT_COST_ESTIMATION.txt` - Cost analysis
 - `slides/EXECUTIVE_SLIDE_DECK.txt` - Presentation materials
 
+## 🔧 Troubleshooting
+
+Reflecting the robust engineering practices of this project, we have detailed debugging protocols available:
+
+- **[Master Debug Strategy](docs/DEBUG_STRATEGY.md)**: Comprehensive guide for full-stack debugging, root cause analysis, and system verification.
+- **[Simple Debug Protocol](docs/SIMPLE_DEBUG_PROTOCOL.md)**: Rapid response guide for common issues (403, 404, Data Missing) with pattern-matching fixes.
+
+Use these guides if you encounter any issues during development or deployment.
+
 ## 🤝 Contributing
 
 1. Fork the repository
