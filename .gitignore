@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+admin-dashboard/node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+build/
+dist/
+admin-dashboard/build/
+
+# IDE and System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Uploads and temporary files
+backend/uploads/
+tmp/
+coverage/
+
+# AI Agent
+.gemini/
