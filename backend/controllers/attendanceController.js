@@ -219,6 +219,9 @@ const getTeamAttendance = async (req, res, next) => {
 
     // Special handling for 'absent' status
     if (status === 'absent') {
+      const qStart = startDate ? moment(startDate).startOf('day') : moment().startOf('day');
+      const qEnd = endDate ? moment(endDate).endOf('day') : moment().endOf('day');
+
       // 1. Get all users matching the user filters
       const users = await User.findAll({
         where: {
@@ -232,20 +235,34 @@ const getTeamAttendance = async (req, res, next) => {
       const presentUserIds = await Attendance.findAll({
         where: {
           date: {
-            [Op.between]: [startDate || moment().format('YYYY-MM-DD'), endDate || moment().format('YYYY-MM-DD')]
+            [Op.between]: [qStart.toDate(), qEnd.toDate()]
           }
         },
         attributes: ['userId']
       }).then(recs => recs.map(r => r.userId));
 
-      // 3. Filter users who are NOT present (i.e., are absent)
-      const absentUsers = users.filter(user => !presentUserIds.includes(user.id));
+      // 3. Find users with APPROVED LEAVES overlapping the date range
+      // Overlap logic: (StartA <= EndB) and (EndA >= StartB)
+      const onLeaveUserIds = await require('../models').Leave.findAll({
+        where: {
+          status: 'approved',
+          startDate: { [Op.lte]: qEnd.format('YYYY-MM-DD') },
+          endDate: { [Op.gte]: qStart.format('YYYY-MM-DD') }
+        },
+        attributes: ['userId']
+      }).then(recs => recs.map(r => r.userId));
 
-      // 4. Create "virtual" attendance records for absent users
+      // 4. Filter users who are NOT present AND NOT on leave
+      const absentUsers = users.filter(user =>
+        !presentUserIds.includes(user.id) &&
+        !onLeaveUserIds.includes(user.id)
+      );
+
+      // 5. Create "virtual" attendance records for absent users
       const absentRecords = absentUsers.map(user => ({
-        id: `absent-${user.id}-${startDate}`, // Virtual ID
+        id: `absent-${user.id}-${qStart.format('YYYY-MM-DD')}`, // Virtual ID
         userId: user.id,
-        date: startDate || moment().format('YYYY-MM-DD'),
+        date: qStart.format('YYYY-MM-DD'),
         status: 'absent',
         clockIn: null,
         clockOut: null,

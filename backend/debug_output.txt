@@ -1,0 +1,42 @@
+--- DEBUG STATE START ---
+
+1. ALL USERS:
+
+id | name | email | managerId | isActive
+---|------|-------|-----------|---------
+c5317d79-befb-4ada-9ce4-ddc147a0600a | Alice Developer | alice@roc4tech.com | 9db54234-9552-4114-a187-4ced63602826 | true
+eb564092-6da6-4da2-b25a-f7276c69a3b3 | Bob Designer | bob@roc4tech.com |  | true
+bb2023bc-5374-41b1-a895-2e70d0695eac | Charlie Analyst | charlie@roc4tech.com | 9db54234-9552-4114-a187-4ced63602826 | true
+9db54234-9552-4114-a187-4ced63602826 | John Manager | john.manager@roc4tech.com |  | true
+57984e39-0c43-4001-993b-c0b08e29b92a | System Administrator | admin@roc4tech.com |  | true
+550e8400-e29b-41d4-a716-446655440001 | Test Admin | testadmin@example.com |  | true
+
+
+2. ATTENDANCE TODAY:
+
+id | name | status | clockIn | clockOut | date
+---|------|--------|---------|----------|-----
+8887761b-1a5f-418f-95b2-15cf40a5f090 | Bob Designer | present | Sat Dec 06 2025 08:00:00 GMT+0100 (Central European Standard Time) | Sat Dec 06 2025 16:30:00 GMT+0100 (Central European Standard Time) | 2025-12-06
+e2eb57ed-bd93-4ff5-9503-e7fcd92c13bb | Charlie Analyst | late | Sat Dec 06 2025 10:30:00 GMT+0100 (Central European Standard Time) | Sat Dec 06 2025 18:30:00 GMT+0100 (Central European Standard Time) | 2025-12-06
+6908f57d-7976-46e0-a5b2-9236009cf0df | John Manager | early_leave | Sat Dec 06 2025 08:00:00 GMT+0100 (Central European Standard Time) | Sat Dec 06 2025 14:00:00 GMT+0100 (Central European Standard Time) | 2025-12-06
+e3cf9c9d-d73a-4261-880e-074aad3d6a66 | System Administrator | present | Sat Dec 06 2025 08:00:00 GMT+0100 (Central European Standard Time) | Sat Dec 06 2025 16:30:00 GMT+0100 (Central European Standard Time) | 2025-12-06
+f96e3e27-1979-4cf6-b19d-5f30edf5ce9e | Test Admin | on_leave | Sat Dec 06 2025 08:00:00 GMT+0100 (Central European Standard Time) |  | 2025-12-06
+
+
+3. ALL LEAVES:
+
+id | name | leaveType | startDate | endDate | status
+---|------|-----------|-----------|---------|-------
+22fbb485-0cd0-4061-9c51-7536c91c6c49 | Bob Designer | sick | 2025-12-02 | 2025-12-04 | approved
+e0b6797f-67bd-4ec2-a9e8-077d2eab5081 | Alice Developer | annual | 2025-12-12 | 2025-12-16 | pending
+4a8381f2-42c7-4126-9124-508e95721a79 | Charlie Analyst | personal | 2025-12-19 | 2025-12-19 | approved
+
+
+4. TRUE ABSENT (Calculated via SQL):
+
+name | email
+-----|------
+Alice Developer | alice@roc4tech.com
+
+
+5. MANAGER RELATIONSHIPS:

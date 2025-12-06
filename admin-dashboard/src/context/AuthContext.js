@@ -23,14 +23,14 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthState = async () => {
     try {
-      const storedToken = localStorage.getItem('authToken');
+      const storedToken = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
 
       if (storedToken && storedUser) {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
         authService.setAuthToken(storedToken);
-        
+
         // Verify token is still valid
         try {
           await authService.getProfile();
@@ -49,19 +49,19 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await authService.login(email, password);
-      
+
       if (response.success) {
         const { token, user } = response;
-        
+
         // Store in localStorage
-        localStorage.setItem('authToken', token);
+        localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
-        
+
         // Update state
         setToken(token);
         setUser(user);
         authService.setAuthToken(token);
-        
+
         return { success: true };
       } else {
         return { success: false, message: response.message };
@@ -75,14 +75,14 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       // Clear localStorage
-      localStorage.removeItem('authToken');
+      localStorage.removeItem('token');
       localStorage.removeItem('user');
-      
+
       // Clear state
       setToken(null);
       setUser(null);
       authService.setAuthToken(null);
-      
+
       return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
@@ -93,13 +93,13 @@ export const AuthProvider = ({ children }) => {
   const updateUserProfile = async (profileData) => {
     try {
       const response = await authService.updateProfile(profileData);
-      
+
       if (response.success) {
         // Update user in storage
         const updatedUser = { ...user, ...response.user };
         localStorage.setItem('user', JSON.stringify(updatedUser));
         setUser(updatedUser);
-        
+
         return { success: true, user: updatedUser };
       } else {
         return { success: false, message: response.message };
@@ -117,13 +117,13 @@ export const AuthProvider = ({ children }) => {
 
   const hasPermission = (permission) => {
     if (!user) return false;
-    
+
     const permissions = {
       admin: ['view_all', 'manage_users', 'manage_attendance', 'manage_leaves', 'view_reports', 'manage_settings'],
       manager: ['view_team', 'manage_team_attendance', 'approve_leaves', 'view_team_reports'],
       employee: ['view_own', 'manage_own_attendance', 'request_leaves']
     };
-    
+
     const userPermissions = permissions[user.role] || [];
     return userPermissions.includes(permission);
   };
