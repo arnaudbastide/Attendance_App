@@ -179,140 +179,146 @@ const getTeamAttendance = async (req, res, next) => {
     const { page = 1, limit = 10, startDate, endDate, department, status } = req.query;
     const offset = (page - 1) * limit;
 
-    let whereClause = {};
+    // Default to today if no date range provided
+    const qStart = startDate ? moment(startDate).startOf('day') : moment().startOf('day');
+    const qEnd = endDate ? moment(endDate).endOf('day') : moment().endOf('day');
 
-    // Date range filter
-    if (startDate && endDate) {
-      whereClause.date = {
-        [Op.between]: [startDate, endDate]
-      };
-    }
-
-    // Status filter
-    if (status) {
-      whereClause.status = status;
-    }
-
-    // User filter for department
-    let userWhereClause = {};
+    console.log('qStart:', qStart.format(), 'qEnd:', qEnd.format(), 'Raw Start:', startDate, 'Raw End:', endDate);
+    // 1. Build User Filters
+    let userWhereClause = { isActive: true };
     if (department) {
       userWhereClause.department = department;
     }
 
-    // Managers can only see their team's attendance
+    // Managers can only see their team
     if (req.user.role === 'manager') {
       userWhereClause.managerId = req.user.id;
     }
-    // Admin sees all
 
-    // Build the User include object conditionally
-    const userInclude = {
-      model: User,
-      as: 'user',
-      attributes: ['id', 'name', 'email', 'department', 'position']
-    };
-
-    // Only add where clause if there are conditions
-    if (Object.keys(userWhereClause).length > 0) {
-      userInclude.where = userWhereClause;
-    }
-
-    // Special handling for 'absent' status
-    if (status === 'absent') {
-      const qStart = startDate ? moment(startDate).startOf('day') : moment().startOf('day');
-      const qEnd = endDate ? moment(endDate).endOf('day') : moment().endOf('day');
-
-      // 1. Get all users matching the user filters
-      const users = await User.findAll({
-        where: {
-          ...userWhereClause,
-          isActive: true
-        },
-        attributes: ['id', 'name', 'email', 'department', 'position']
-      });
-
-      // 2. Find which users have attendance for the date range
-      const presentUserIds = await Attendance.findAll({
-        where: {
-          date: {
-            [Op.between]: [qStart.toDate(), qEnd.toDate()]
-          }
-        },
-        attributes: ['userId']
-      }).then(recs => recs.map(r => r.userId));
-
-      // 3. Find users with APPROVED LEAVES overlapping the date range
-      // Overlap logic: (StartA <= EndB) and (EndA >= StartB)
-      const onLeaveUserIds = await require('../models').Leave.findAll({
-        where: {
-          status: 'approved',
-          startDate: { [Op.lte]: qEnd.format('YYYY-MM-DD') },
-          endDate: { [Op.gte]: qStart.format('YYYY-MM-DD') }
-        },
-        attributes: ['userId']
-      }).then(recs => recs.map(r => r.userId));
-
-      // 4. Filter users who are NOT present AND NOT on leave
-      const absentUsers = users.filter(user =>
-        !presentUserIds.includes(user.id) &&
-        !onLeaveUserIds.includes(user.id)
-      );
-
-      // 5. Create "virtual" attendance records for absent users
-      const absentRecords = absentUsers.map(user => ({
-        id: `absent-${user.id}-${qStart.format('YYYY-MM-DD')}`, // Virtual ID
-        userId: user.id,
-        date: qStart.format('YYYY-MM-DD'),
-        status: 'absent',
-        clockIn: null,
-        clockOut: null,
-        totalHours: 0,
-        user: user,
-        breaks: []
-      }));
-
-      // Pagination for manual list
-      const total = absentRecords.length;
-      const paginatedRecords = absentRecords.slice(offset, offset + parseInt(limit));
-
-      return res.json({
-        success: true,
-        attendances: paginatedRecords,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total: total,
-          pages: Math.ceil(total / limit)
-        }
-      });
-    }
-
-    // Standard behavior for other statuses
-    const attendances = await Attendance.findAndCountAll({
-      where: whereClause,
-      include: [
-        userInclude,
-        {
-          model: Break,
-          as: 'breaks',
-          required: false
-        }
-      ],
-      order: [['date', 'DESC'], ['clockIn', 'DESC']],
-      limit: parseInt(limit),
-      offset: parseInt(offset)
+    // 2. Fetch ALL matching users first (filtering later for pagination)
+    // We need all users to correctly determine "Absent" vs "Present" for the full set
+    const allUsers = await User.findAll({
+      where: userWhereClause,
+      attributes: ['id', 'name', 'email', 'department', 'position', 'managerId'],
+      order: [['name', 'ASC']]
     });
+
+    console.log(`Found ${allUsers.length} active users matching criteria.`);
+
+    // 3. Fetch Attendance for these users in date range
+    const userIds = allUsers.map(u => u.id);
+    const attendances = await Attendance.findAll({
+      where: {
+        userId: { [Op.in]: userIds },
+        date: {
+          [Op.between]: [qStart.format('YYYY-MM-DD'), qEnd.format('YYYY-MM-DD')]
+        }
+      },
+      include: [{ model: Break, as: 'breaks' }]
+    });
+
+    // 4. Fetch Approved Leaves for these users in date range
+    const leaves = await require('../models').Leave.findAll({
+      where: {
+        userId: { [Op.in]: userIds },
+        status: 'approved',
+        [Op.or]: [
+          {
+            startDate: { [Op.between]: [qStart.format('YYYY-MM-DD'), qEnd.format('YYYY-MM-DD')] }
+          },
+          {
+            endDate: { [Op.between]: [qStart.format('YYYY-MM-DD'), qEnd.format('YYYY-MM-DD')] }
+          },
+          {
+            startDate: { [Op.lte]: qStart.format('YYYY-MM-DD') },
+            endDate: { [Op.gte]: qEnd.format('YYYY-MM-DD') }
+          }
+        ]
+      }
+    });
+
+    // 5. Construct the Combined List
+    let combinedRecords = [];
+
+    // For simplicity in a daily view (which this usually is), we iterate users.
+    // If date range > 1 day, we might need to explode rows (Users x Days), 
+    // but the UI typically shows a list of records. 
+    // If the UI expects a list of attendance records, we should synthesize "Absent" records for each day.
+    // However, if the date range is large, this could be huge. 
+    // Let's assume the UI mostly queries for a single day or small range, or expects one row per user per day.
+
+    const daysDiff = qEnd.diff(qStart, 'days') + 1;
+    console.log(`[DEBUG] Date Range: ${daysDiff} days. Users: ${allUsers.length}`);
+
+    for (let i = 0; i < daysDiff; i++) {
+      const currentDate = moment(qStart).add(i, 'days').format('YYYY-MM-DD');
+
+      for (const user of allUsers) {
+        // Check for existing attendance
+        const attRecord = attendances.find(a => a.userId === user.id && a.date === currentDate);
+
+        // Check for leave
+        const leaveRecord = leaves.find(l =>
+          moment(currentDate).isBetween(l.startDate, l.endDate, null, '[]') && l.userId === user.id
+        );
+
+        if (attRecord) {
+          // Real attendance record
+          combinedRecords.push({
+            ...attRecord.toJSON(),
+            user: user.toJSON() // Ensure user data is attached
+          });
+        } else if (leaveRecord) {
+          // User is ON LEAVE
+          combinedRecords.push({
+            id: `leave-${user.id}-${currentDate}`,
+            userId: user.id,
+            date: currentDate,
+            status: 'on_leave',
+            clockIn: null,
+            clockOut: null,
+            totalHours: 0,
+            user: user.toJSON(),
+            breaks: [],
+            notes: `On Leave: ${leaveRecord.leaveType}`
+          });
+        } else {
+          // User is ABSENT
+          combinedRecords.push({
+            id: `absent-${user.id}-${currentDate}`, // Virtual ID
+            userId: user.id,
+            date: currentDate,
+            status: 'absent',
+            clockIn: null,
+            clockOut: null,
+            totalHours: 0,
+            user: user.toJSON(),
+            breaks: []
+          });
+        }
+      }
+    }
+
+    // 6. Apply Status Filter (if requested)
+    if (status) {
+      combinedRecords = combinedRecords.filter(r => r.status === status);
+    }
+
+    // 7. Pagination
+    const total = combinedRecords.length;
+    const paginatedRecords = combinedRecords.slice(offset, offset + parseInt(limit));
 
     res.json({
       success: true,
-      attendances: attendances.rows,
+      attendances: paginatedRecords,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total: attendances.count,
-        pages: Math.ceil(attendances.count / limit)
+        total: total,
+        pages: Math.ceil(total / limit)
       }
     });
+
   } catch (error) {
     next(error);
   }

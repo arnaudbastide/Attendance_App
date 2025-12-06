@@ -73,7 +73,7 @@ services:
       REACT_APP_API_URL: http://backend:5000/api
       GENERATE_SOURCEMAP: false
     ports:
-      - "3000:80"
+      - "3005:80"
     depends_on:
       - backend
     networks:
