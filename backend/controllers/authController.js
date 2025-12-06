@@ -63,7 +63,7 @@ const login = async (req, res, next) => {
 
 const register = async (req, res, next) => {
   try {
-    const { error } = validateRegister(req.body);
+    const { error, value } = validateRegister(req.body);
     if (error) {
       return res.status(400).json({
         success: false,
@@ -71,7 +71,7 @@ const register = async (req, res, next) => {
       });
     }
 
-    const { name, email, password, department, position, phone } = req.body;
+    const { name, email, password, department, position, phone } = value;
 
     // Check if user exists
     const existingUser = await User.findOne({ where: { email } });

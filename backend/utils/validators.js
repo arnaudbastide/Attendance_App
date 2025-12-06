@@ -19,6 +19,9 @@ const validateRegister = (data) => {
     position: Joi.string().max(100).optional(),
     phone: Joi.string().max(20).optional(),
     managerId: Joi.forbidden()
+  }).options({
+    stripUnknown: true,
+    abortEarly: false
   });
   return schema.validate(data);
 };

@@ -10,6 +10,7 @@ Self-service registration flow in `backend/controllers/authController.js` and re
 
 ## Remediation
 - Registration validation now explicitly forbids `role` and `managerId` inputs to prevent clients from supplying privilege-related fields.
+- Validation strips unknown fields and aggregates errors to avoid leaking or persisting unexpected data from untrusted clients.
 - The registration handler always assigns new users the default `employee` role and ignores any attempt to override it.
 
 ## Recommendations
