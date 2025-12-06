@@ -14,11 +14,11 @@ const validateRegister = (data) => {
     name: Joi.string().min(2).max(100).required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
-    role: Joi.string().valid('admin', 'manager', 'employee').optional(),
+    role: Joi.forbidden(),
     department: Joi.string().max(50).optional(),
     position: Joi.string().max(100).optional(),
     phone: Joi.string().max(20).optional(),
-    managerId: Joi.string().uuid().optional()
+    managerId: Joi.forbidden()
   });
   return schema.validate(data);
 };
