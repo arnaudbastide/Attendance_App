@@ -75,7 +75,7 @@ const getAttendanceReport = async (req, res, next) => {
       // If employee has no attendance records, count all days as absent
       const actualAbsentDays = totalDays === 0 ? totalDaysInRange : absentDays;
 
-      const totalHours = attendances.reduce((sum, a) => sum + (parseFloat(a.totalHours) || 0), 0);
+      const totalHours = attendances.reduce((sum, a) => sum + (a && a.totalHours || 0), 0);
       const averageHours = totalDays > 0 ? totalHours / totalDays : 0;
 
       const totalBreakTime = attendances.reduce((sum, a) => {
@@ -314,19 +314,8 @@ const getDashboardStats = async (req, res, next) => {
       ]
     });
 
-    const presentRecords = todayAttendance.filter(a => ['present', 'late', 'early_leave'].includes(a.status));
-    const presentToday = new Set(presentRecords.map(a => a.userId)).size;
-
-    // Also consider users on leave as NOT absent if logic requires, but typically Absent = Total - Present - OnLeave?
-    // Current logic: Absent = Total - Present.
-    // If someone is On Leave, they are NOT Present. So they are counted as Absent.
-    // Ideally, Dashboard Stats should break down: Present, Absent, On Leave.
-    // But sticking to the existing variable 'absentToday', let's fix the negative number first.
-    // If user is On Leave, should they be 'Absent'? Techncially yes, they are absent from work.
-    // But if we want accurate 'Unplanned Absent', we should subtract On Leave.
-    // However, the critical fix is preventing > Total count.
-
-    const absentToday = Math.max(0, totalEmployees - presentToday);
+    const presentToday = todayAttendance.filter(a => ['present', 'late', 'early_leave'].includes(a.status)).length;
+    const absentToday = totalEmployees - presentToday;
 
     // Get this month's stats
     const monthStart = moment().startOf('month').format('YYYY-MM-DD');

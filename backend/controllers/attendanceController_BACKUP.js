@@ -1,5 +1,5 @@
 // backend/controllers/attendanceController.js - Attendance management controller
-const { Attendance, User, Break, Leave } = require('../models');
+const { Attendance, User, Break } = require('../models');
 const { Op } = require('sequelize');
 const moment = require('moment');
 
@@ -9,24 +9,6 @@ const clockIn = async (req, res, next) => {
     const userId = req.user.id;
     const today = moment().format('YYYY-MM-DD');
 
-    // Check for approved leave
-    const onLeave = await Leave.findOne({
-      where: {
-        userId,
-        status: 'approved',
-        startDate: { [Op.lte]: today },
-        endDate: { [Op.gte]: today }
-      }
-    });
-
-    if (onLeave) {
-      return res.status(400).json({
-        success: false,
-        message: 'You cannot clock in while on approved leave.'
-      });
-    }
-
-    // Check if already clocked in (has an active session without clock out)
     // Check if already clocked in (has an active session without clock out)
     const activeAttendance = await Attendance.findOne({
       where: {
@@ -125,26 +107,10 @@ const getCurrentStatus = async (req, res, next) => {
       order: [['createdAt', 'DESC']]
     });
 
-    // Check for leave
-    const leaveRecord = await Leave.findOne({
-      where: {
-        userId,
-        status: 'approved',
-        startDate: { [Op.lte]: today },
-        endDate: { [Op.gte]: today }
-      }
-    });
-
-
-    console.log(`[Status Debug] User: ${userId}, Date: ${today}`);
-    console.log(`[Status Debug] Leave Query Result:`, leaveRecord ? `Found (Status: ${leaveRecord.status})` : 'Not Found');
-
     let status = 'not_clocked_in';
     let currentHours = 0;
 
-    if (leaveRecord) {
-      status = 'on_leave';
-    } else if (attendance) {
+    if (attendance) {
       if (attendance.clockOut) {
         status = 'clocked_out';
         currentHours = parseFloat(attendance.totalHours) || 0;
@@ -275,15 +241,12 @@ const getTeamAttendance = async (req, res, next) => {
     // 5. Construct the Combined List
     let combinedRecords = [];
 
-    // Create Maps for O(1) lookup
-    const attendanceMap = new Map();
-    attendances.forEach(att => {
-      const key = `${att.userId}-${att.date}`;
-      attendanceMap.set(key, att);
-    });
-
-    const leaveMap = new Map(); // Optimize checking? Leaves are ranges, so Map might be harder unless we explode them first.
-    // For leaves, we can just filter for current users. Since leaves are few, array.find is okay, BUT proper date logic is key.
+    // For simplicity in a daily view (which this usually is), we iterate users.
+    // If date range > 1 day, we might need to explode rows (Users x Days), 
+    // but the UI typically shows a list of records. 
+    // If the UI expects a list of attendance records, we should synthesize "Absent" records for each day.
+    // However, if the date range is large, this could be huge. 
+    // Let's assume the UI mostly queries for a single day or small range, or expects one row per user per day.
 
     const daysDiff = qEnd.diff(qStart, 'days') + 1;
     console.log(`[DEBUG] Date Range: ${daysDiff} days. Users: ${allUsers.length}`);
@@ -292,10 +255,10 @@ const getTeamAttendance = async (req, res, next) => {
       const currentDate = moment(qStart).add(i, 'days').format('YYYY-MM-DD');
 
       for (const user of allUsers) {
-        const attKey = `${user.id}-${currentDate}`;
-        const attRecord = attendanceMap.get(attKey);
+        // Check for existing attendance
+        const attRecord = attendances.find(a => a.userId === user.id && a.date === currentDate);
 
-        // Check for leave with correct date logic
+        // Check for leave
         const leaveRecord = leaves.find(l =>
           moment(currentDate).isBetween(l.startDate, l.endDate, null, '[]') && l.userId === user.id
         );
@@ -304,7 +267,7 @@ const getTeamAttendance = async (req, res, next) => {
           // Real attendance record
           combinedRecords.push({
             ...attRecord.toJSON(),
-            user: user.toJSON()
+            user: user.toJSON() // Ensure user data is attached
           });
         } else if (leaveRecord) {
           // User is ON LEAVE
@@ -323,7 +286,7 @@ const getTeamAttendance = async (req, res, next) => {
         } else {
           // User is ABSENT
           combinedRecords.push({
-            id: `absent-${user.id}-${currentDate}`,
+            id: `absent-${user.id}-${currentDate}`, // Virtual ID
             userId: user.id,
             date: currentDate,
             status: 'absent',
