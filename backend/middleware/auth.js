@@ -8,6 +8,7 @@ const authMiddleware = async (req, res, next) => {
     const token = authHeader ? authHeader.replace('Bearer ', '') : null;
 
     if (!token) {
+      console.log('[Auth Debug] No token provided in header:', authHeader);
       return res.status(401).json({
         success: false,
         message: 'Access denied. No token provided.'
@@ -15,9 +16,11 @@ const authMiddleware = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('[Auth Debug] Token decoded, User ID:', decoded.id);
     const user = await User.findByPk(decoded.id);
 
     if (!user) {
+      console.log('[Auth Debug] User not found for ID:', decoded.id);
       return res.status(401).json({
         success: false,
         message: 'Invalid token. User not found.'
@@ -34,6 +37,7 @@ const authMiddleware = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    console.log('[Auth Debug] Token verification failed:', error.message);
     res.status(401).json({
       success: false,
       message: 'Invalid token.'

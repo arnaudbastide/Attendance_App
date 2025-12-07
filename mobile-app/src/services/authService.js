@@ -57,6 +57,9 @@ export const clearAuthToken = () => {
 };
 
 export const authService = {
+  setAuthToken,
+  clearAuthToken,
+
   // Authentication
   async login(email, password) {
     try {
@@ -94,6 +97,19 @@ export const authService = {
       return response.data;
     } catch (error) {
       console.error('Update profile error:', error);
+      throw error;
+    }
+  },
+
+  async getCurrentStatus() {
+    try {
+      const response = await api.get('/attendance/status');
+      return response.data;
+    } catch (error) {
+      // Don't log 404s (not clocked in) as errors
+      if (error.response && error.response.status !== 404) {
+        console.error('Get status error:', error);
+      }
       throw error;
     }
   },

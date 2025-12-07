@@ -32,14 +32,31 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    if (user && !locationLoading) {
+      loadDashboardData();
+    }
+  }, [user]);
 
   const loadDashboardData = async () => {
     try {
-      const response = await authService.getDashboardStats();
-      if (response.success) {
-        setTodayStats(response.stats);
+      const [statsRes, statusRes] = await Promise.all([
+        authService.getDashboardStats(),
+        authService.getCurrentStatus()
+      ]);
+
+      if (statsRes.success) {
+        setTodayStats(statsRes.stats);
+      }
+
+      if (statusRes.success) {
+        // Map backend status (underscores) to frontend (hyphens)
+        if (statusRes.status === 'clocked_in') {
+          setAttendanceStatus('clocked-in');
+        } else if (statusRes.status === 'clocked_out') {
+          setAttendanceStatus('clocked-out');
+        } else {
+          setAttendanceStatus(null);
+        }
       }
     } catch (error) {
       console.error('Error loading dashboard:', error);
@@ -56,7 +73,7 @@ export default function DashboardScreen() {
     setIsLoading(true);
     try {
       let location = null;
-      
+
       // Try to get location
       try {
         location = await getCurrentLocation();
@@ -65,7 +82,7 @@ export default function DashboardScreen() {
       }
 
       const response = await authService.clockIn(location);
-      
+
       if (response.success) {
         setAttendanceStatus('clocked-in');
         Alert.alert('Success', 'Clocked in successfully!');
@@ -74,7 +91,8 @@ export default function DashboardScreen() {
         Alert.alert('Error', response.message || 'Failed to clock in');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to clock in. Please try again.');
+      const errorMessage = error.response?.data?.message || 'Failed to clock in. Please try again.';
+      Alert.alert('Error', errorMessage);
       console.error('Clock in error:', error);
     } finally {
       setIsLoading(false);
@@ -85,7 +103,7 @@ export default function DashboardScreen() {
     setIsLoading(true);
     try {
       let location = null;
-      
+
       // Try to get location
       try {
         location = await getCurrentLocation();
@@ -94,7 +112,7 @@ export default function DashboardScreen() {
       }
 
       const response = await authService.clockOut(location);
-      
+
       if (response.success) {
         setAttendanceStatus('clocked-out');
         Alert.alert('Success', 'Clocked out successfully!');
@@ -103,7 +121,8 @@ export default function DashboardScreen() {
         Alert.alert('Error', response.message || 'Failed to clock out');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to clock out. Please try again.');
+      const errorMessage = error.response?.data?.message || 'Failed to clock out. Please try again.';
+      Alert.alert('Error', errorMessage);
       console.error('Clock out error:', error);
     } finally {
       setIsLoading(false);
@@ -159,7 +178,7 @@ export default function DashboardScreen() {
             >
               Clock In
             </Button>
-            
+
             <Button
               mode="contained"
               onPress={handleClockOut}
@@ -223,8 +242,8 @@ export default function DashboardScreen() {
                 {attendanceStatus === 'clocked-in' ? 'Clocked In' : 'Not Clocked In'}
               </Text>
               <Text style={styles.statusTime}>
-                {attendanceStatus === 'clocked-in' 
-                  ? `Since ${formatTime(new Date())}` 
+                {attendanceStatus === 'clocked-in'
+                  ? `Since ${formatTime(new Date())}`
                   : 'Tap Clock In to start your day'}
               </Text>
             </View>

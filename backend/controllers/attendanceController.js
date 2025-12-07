@@ -6,6 +6,8 @@ const moment = require('moment');
 // Clock In
 const clockIn = async (req, res, next) => {
   try {
+    console.log('[ClockIn Debug] Request received');
+    if (!req.user) console.log('[ClockIn Debug] No user in request!');
     const userId = req.user.id;
     const today = moment().format('YYYY-MM-DD');
 
@@ -24,6 +26,7 @@ const clockIn = async (req, res, next) => {
         success: false,
         message: 'You cannot clock in while on approved leave.'
       });
+      console.log(`[ClockIn Debug] Failed - User on leave`);
     }
 
     // Check if already clocked in (has an active session without clock out)
@@ -37,6 +40,7 @@ const clockIn = async (req, res, next) => {
     });
 
     if (activeAttendance) {
+      console.log(`[ClockIn Debug] Failed - Already clocked in`);
       return res.status(400).json({
         success: false,
         message: 'You are already clocked in'
@@ -51,6 +55,7 @@ const clockIn = async (req, res, next) => {
       status: 'present',
       isApproved: false
     });
+    console.log(`[ClockIn Debug] Success - ID: ${attendance.id}`);
 
     // Emit socket event
     const io = req.app.get('io');
