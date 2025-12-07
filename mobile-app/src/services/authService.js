@@ -3,7 +3,9 @@ import axios from 'axios';
 
 // Replace with your machine's LAN IP for physical device testing
 // const API_BASE_URL = 'http://localhost:5000/api'; 
-const API_BASE_URL = 'http://192.168.1.10:5000/api';
+// const API_BASE_URL = 'http://192.168.1.10:5000/api';
+// const API_BASE_URL = 'https://busy-crabs-clap.loca.lt/api'; // Tunnel URL
+const API_BASE_URL = 'https://busy-crabs-clap.loca.lt/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

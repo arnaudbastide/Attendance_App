@@ -34,7 +34,12 @@ module.exports = {
             process.env.FRONTEND_URL,
             process.env.MOBILE_APP_URL,
             'http://localhost:3000',
-            'http://localhost:3001'
+            'http://localhost:3001',
+            'http://192.168.1.10:5000',
+            'http://192.168.1.10:8081',
+            'http://192.168.1.10:8082',
+            'https://busy-crabs-clap.loca.lt',
+            '*'
         ].filter(Boolean),
         credentials: true
     },
