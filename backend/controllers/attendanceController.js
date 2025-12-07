@@ -111,7 +111,8 @@ const getCurrentStatus = async (req, res, next) => {
     const userId = req.user.id;
     const today = moment().format('YYYY-MM-DD');
 
-    const attendance = await Attendance.findOne({
+    // Get ALL attendance records for today, not just one
+    const attendanceRecords = await Attendance.findAll({
       where: {
         userId,
         date: today
@@ -135,22 +136,44 @@ const getCurrentStatus = async (req, res, next) => {
       }
     });
 
-
     console.log(`[Status Debug] User: ${userId}, Date: ${today}`);
     console.log(`[Status Debug] Leave Query Result:`, leaveRecord ? `Found (Status: ${leaveRecord.status})` : 'Not Found');
+    console.log(`[Status Debug] Attendance Records Found:`, attendanceRecords.length);
 
     let status = 'not_clocked_in';
     let currentHours = 0;
+    let attendance = null;
 
     if (leaveRecord) {
       status = 'on_leave';
-    } else if (attendance) {
+    } else if (attendanceRecords.length > 0) {
+      // Get the most recent record for status
+      attendance = attendanceRecords[0];
+
+      // Calculate total hours from ALL sessions today
+      let totalDayHours = 0;
+      let hasActiveSession = false;
+
+      for (const record of attendanceRecords) {
+        if (record.clockOut) {
+          // Completed session - add its hours
+          const sessionHours = moment(record.clockOut).diff(moment(record.clockIn), 'hours', true);
+          totalDayHours += sessionHours;
+        } else {
+          // Active session - this is the current one
+          hasActiveSession = true;
+          const activeHours = moment().diff(moment(record.clockIn), 'hours', true);
+          totalDayHours += activeHours;
+        }
+      }
+
+      currentHours = totalDayHours;
+
+      // Set status based on most recent record
       if (attendance.clockOut) {
         status = 'clocked_out';
-        currentHours = parseFloat(attendance.totalHours) || 0;
       } else {
         status = 'clocked_in';
-        currentHours = moment().diff(moment(attendance.clockIn), 'hours', true);
       }
     }
 
@@ -211,7 +234,7 @@ const getMyAttendance = async (req, res, next) => {
 // Get Team Attendance (for managers and admins)
 const getTeamAttendance = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, startDate, endDate, department, status } = req.query;
+    const { page = 1, limit = 10, startDate, endDate, department, status, search } = req.query;
     const offset = (page - 1) * limit;
 
     // Default to today if no date range provided
@@ -223,6 +246,13 @@ const getTeamAttendance = async (req, res, next) => {
     let userWhereClause = { isActive: true };
     if (department) {
       userWhereClause.department = department;
+    }
+
+    if (search) {
+      userWhereClause[Op.or] = [
+        { name: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } }
+      ];
     }
 
     // Managers can only see their team

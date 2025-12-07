@@ -104,10 +104,64 @@ const getAttendanceReport = async (req, res, next) => {
       };
     });
 
+    // Calculate Daily Trend Data for Chart
+    const trendMap = new Map();
+    const dateIterator = moment(formattedStartDate);
+    const endDateObj = moment(formattedEndDate);
+
+    // Initialize map with all dates in range
+    while (dateIterator.isSameOrBefore(endDateObj)) {
+      trendMap.set(dateIterator.format('YYYY-MM-DD'), {
+        name: dateIterator.format('MMM DD'),
+        date: dateIterator.format('YYYY-MM-DD'),
+        present: 0,
+        absent: 0
+      });
+      dateIterator.add(1, 'days');
+    }
+
+    // Populate trend data
+    reportData.forEach(user => {
+      const attendances = user.attendances || [];
+      attendances.forEach(a => {
+        const dateStr = a.date; // already YYYY-MM-DD from DB or likely matches
+        if (trendMap.has(dateStr)) {
+          const entry = trendMap.get(dateStr);
+          if (a.status === 'present' || a.status === 'late' || a.status === 'early_leave') {
+            entry.present++;
+          } else {
+            entry.absent++; // Simplified absent count
+          }
+        }
+      });
+    });
+
+    const chartData = Array.from(trendMap.values());
+
+    // Calculate Department Distribution for Pie Chart
+    const deptMap = {};
+    reportData.forEach(user => {
+      if (user.department) {
+        if (!deptMap[user.department]) {
+          deptMap[user.department] = 0;
+        }
+        // Count total present days contributed by this department
+        const presentCount = (user.attendances || []).filter(a => ['present', 'late', 'early_leave'].includes(a.status)).length;
+        deptMap[user.department] += presentCount;
+      }
+    });
+
+    const departmentStats = Object.keys(deptMap).map((dept, index) => ({
+      name: dept,
+      value: deptMap[dept],
+      color: ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff88'][index % 5]
+    })).filter(d => d.value > 0);
+
     if (format === 'csv') {
-      console.log('Generating CSV report...');
+      // ... (CSV generation logic remains same, mostly)
       console.log('Generating CSV report...');
       const uploadDir = path.resolve(__dirname, '../uploads');
+
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
@@ -175,6 +229,8 @@ const getAttendanceReport = async (req, res, next) => {
       res.json({
         success: true,
         report: processedData,
+        chartData,
+        departmentStats,
         period: { startDate, endDate }
       });
     }
@@ -232,24 +288,20 @@ const getLeaveReport = async (req, res, next) => {
     }));
 
     // Group by department
-    const departmentStats = {};
+    const deptMap = {};
     processedData.forEach(leave => {
-      if (!departmentStats[leave.department]) {
-        departmentStats[leave.department] = {
-          totalLeaves: 0,
-          totalDays: 0,
-          leaveTypes: {}
-        };
+      const dept = leave.department || 'Unknown';
+      if (!deptMap[dept]) {
+        deptMap[dept] = 0;
       }
-
-      departmentStats[leave.department].totalLeaves++;
-      departmentStats[leave.department].totalDays += leave.totalDays;
-
-      if (!departmentStats[leave.department].leaveTypes[leave.leaveType]) {
-        departmentStats[leave.department].leaveTypes[leave.leaveType] = 0;
-      }
-      departmentStats[leave.department].leaveTypes[leave.leaveType]++;
+      deptMap[dept]++;
     });
+
+    const departmentStats = Object.keys(deptMap).map((dept, index) => ({
+      name: dept,
+      value: deptMap[dept],
+      color: ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff88'][index % 5]
+    })).filter(d => d.value > 0);
 
     if (format === 'csv') {
       const uploadDir = path.resolve(__dirname, '../uploads');
@@ -302,6 +354,7 @@ const getDashboardStats = async (req, res, next) => {
     }
     console.log('UserWhereClause:', JSON.stringify(userWhereClause));
 
+    // Get total employees
     // Get total employees
     const totalEmployees = await User.count({
       where: { ...userWhereClause, isActive: true }
@@ -388,6 +441,29 @@ const getDashboardStats = async (req, res, next) => {
       limit: 5
     });
 
+    // Calculate weekly data for chart
+    const monthlyChartData = [
+      { name: 'Week 1', hours: 0 },
+      { name: 'Week 2', hours: 0 },
+      { name: 'Week 3', hours: 0 },
+      { name: 'Week 4', hours: 0 },
+      { name: 'Week 5', hours: 0 }
+    ];
+
+    monthAttendance.forEach(record => {
+      const day = moment(record.date).date();
+      const weekIndex = Math.floor((day - 1) / 7);
+      if (monthlyChartData[weekIndex]) {
+        monthlyChartData[weekIndex].hours += parseFloat(record.totalHours) || 0;
+      }
+    });
+
+    // Round hours for cleaner JSON
+    monthlyChartData.forEach(d => d.hours = Number(d.hours.toFixed(1)));
+
+    // Remove Week 5 if empty (often empty for 28-day months or just depending on start)
+    const finalChartData = monthlyChartData.filter(d => d.hours > 0 || d.name !== 'Week 5');
+
     res.json({
       success: true,
       stats: {
@@ -397,7 +473,8 @@ const getDashboardStats = async (req, res, next) => {
         pendingLeaves,
         attendanceRate: totalEmployees > 0 ? ((presentToday / totalEmployees) * 100).toFixed(0) : 0,
         totalHoursThisMonth: Number(totalHoursThisMonth).toFixed(2),
-        avgHoursPerDay: Number(avgHoursPerDay).toFixed(2)
+        avgHoursPerDay: Number(avgHoursPerDay).toFixed(2),
+        monthlyChartData: finalChartData
       },
       recentActivities
     });

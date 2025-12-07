@@ -35,7 +35,10 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: [
+      process.env.FRONTEND_URL || "http://localhost:3000",
+      "http://localhost:3001"
+    ],
     methods: ["GET", "POST"]
   }
 });
@@ -49,7 +52,11 @@ const limiter = rateLimit({
 app.set('trust proxy', 1); // Trust first proxy
 app.use(helmet());
 app.use(cors({
-  origin: [process.env.FRONTEND_URL, process.env.MOBILE_APP_URL || 'http://localhost:3000'],
+  origin: [
+    process.env.FRONTEND_URL,
+    process.env.MOBILE_APP_URL || 'http://localhost:3000',
+    'http://localhost:3001'
+  ],
   credentials: true
 }));
 

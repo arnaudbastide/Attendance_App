@@ -40,7 +40,7 @@ export default function ClockInOutButton() {
 
     const fetchStatus = async () => {
         try {
-            const token = localStorage.getItem('authToken');
+            const token = localStorage.getItem('token');
             const response = await axios.get(`${API_BASE_URL}/attendance/status`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -63,7 +63,7 @@ export default function ClockInOutButton() {
         setSuccess('');
 
         try {
-            const token = localStorage.getItem('authToken');
+            const token = localStorage.getItem('token');
             const response = await axios.post(
                 `${API_BASE_URL}/attendance/clock-in`,
                 {},
@@ -87,7 +87,7 @@ export default function ClockInOutButton() {
         setSuccess('');
 
         try {
-            const token = localStorage.getItem('authToken');
+            const token = localStorage.getItem('token');
             const response = await axios.post(
                 `${API_BASE_URL}/attendance/clock-out`,
                 {},
@@ -175,7 +175,7 @@ export default function ClockInOutButton() {
                 {status === 'clocked_out' && attendance && (
                     <Box sx={{ mb: 2, textAlign: 'center' }}>
                         <Typography variant="h3" sx={{ fontWeight: 700 }}>
-                            {attendance.totalHours}h
+                            {currentHours}h
                         </Typography>
                         <Typography variant="body2" sx={{ opacity: 0.9 }}>
                             Total hours worked today

@@ -29,7 +29,8 @@ import {
   CheckCircle,
   Cancel,
   Visibility,
-  Download
+  Download,
+  Add as AddIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
@@ -50,6 +51,15 @@ export default function LeavesPage() {
   const [approvalAction, setApprovalAction] = useState('');
   const [approvalComments, setApprovalComments] = useState('');
 
+  // Request Leave Dialog
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  const [leaveForm, setLeaveForm] = useState({
+    leaveType: 'annual',
+    startDate: '',
+    endDate: '',
+    reason: ''
+  });
+
   const { hasRole } = useAuth();
 
   useEffect(() => {
@@ -64,7 +74,11 @@ export default function LeavesPage() {
         status: statusFilter
       };
 
-      const response = await authService.getPendingLeaves(params);
+      // Employees see their own leaves, managers/admins see team leaves
+      const response = hasRole(['admin', 'manager'])
+        ? await authService.getPendingLeaves(params)
+        : await authService.getMyLeaves(params);
+
       if (response.success) {
         setLeaves(response.leaves);
       }
@@ -109,6 +123,50 @@ export default function LeavesPage() {
     } catch (error) {
       toast.error('Failed to process leave request');
       console.error('Error processing leave:', error);
+    }
+  };
+
+  const handleRequestLeave = async () => {
+    try {
+      // Calculate total days
+      const start = new Date(leaveForm.startDate);
+      const end = new Date(leaveForm.endDate);
+      const diffTime = Math.abs(end - start);
+      const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+      const requestData = {
+        ...leaveForm,
+        totalDays
+      };
+
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/leaves', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(requestData)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Leave request submitted successfully');
+        setRequestDialogOpen(false);
+        setLeaveForm({
+          leaveType: 'annual',
+          startDate: '',
+          endDate: '',
+          reason: ''
+        });
+        await loadLeaves();
+      } else {
+        toast.error(data.message || 'Failed to submit leave request');
+      }
+    } catch (error) {
+      toast.error('Failed to submit leave request');
+      console.error('Error requesting leave:', error);
     }
   };
 
@@ -181,13 +239,25 @@ export default function LeavesPage() {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Leave Management</Typography>
-        <Button
-          variant="contained"
-          startIcon={<Download />}
-          onClick={handleExport}
-        >
-          Export Report
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => setRequestDialogOpen(true)}
+          >
+            Request Leave
+          </Button>
+          {hasRole(['admin', 'manager']) && (
+            <Button
+              variant="outlined"
+              startIcon={<Download />}
+              onClick={handleExport}
+            >
+              Export Report
+            </Button>
+          )}
+        </Box>
       </Box>
 
       {/* Status Filter */}
@@ -534,6 +604,90 @@ export default function LeavesPage() {
             variant="contained"
           >
             {approvalAction === 'approved' ? 'Approve' : 'Reject'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Request Leave Dialog */}
+      <Dialog open={requestDialogOpen} onClose={() => setRequestDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Request Leave</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <TextField
+                select
+                fullWidth
+                label="Leave Type"
+                value={leaveForm.leaveType}
+                onChange={(e) => setLeaveForm({ ...leaveForm, leaveType: e.target.value })}
+                SelectProps={{
+                  native: true,
+                }}
+              >
+                <option value="annual">🏖️ Annual Leave</option>
+                <option value="sick">🏥 Sick Leave</option>
+                <option value="personal">👤 Personal Leave</option>
+                <option value="maternity">👶 Maternity Leave</option>
+                <option value="paternity">👶 Paternity Leave</option>
+                <option value="bereavement">🕯️ Bereavement Leave</option>
+                <option value="unpaid">💰 Unpaid Leave</option>
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Start Date"
+                value={leaveForm.startDate}
+                onChange={(e) => setLeaveForm({ ...leaveForm, startDate: e.target.value })}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                inputProps={{
+                  min: new Date().toISOString().split('T')[0]
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="End Date"
+                value={leaveForm.endDate}
+                onChange={(e) => setLeaveForm({ ...leaveForm, endDate: e.target.value })}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                inputProps={{
+                  min: leaveForm.startDate || new Date().toISOString().split('T')[0]
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Reason"
+                value={leaveForm.reason}
+                onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
+                placeholder="Please provide a reason for your leave request..."
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRequestDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleRequestLeave}
+            variant="contained"
+            color="primary"
+            disabled={!leaveForm.startDate || !leaveForm.endDate || !leaveForm.reason}
+          >
+            Submit Request
           </Button>
         </DialogActions>
       </Dialog>

@@ -41,6 +41,7 @@ import { format } from 'date-fns';
 
 import { authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import ClockInOutButton from '../components/ClockInOutButton';
 
 export default function DashboardPage() {
@@ -48,10 +49,21 @@ export default function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user, hasRole } = useAuth();
+  const { subscribeToAttendanceUpdates } = useSocket();
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+
+    const unsubscribe = subscribeToAttendanceUpdates((newItem) => {
+      setRecentActivity(prev => [newItem, ...prev].slice(0, 10));
+      // Optionally reload all stats to keep counters in sync
+      loadDashboardData();
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [subscribeToAttendanceUpdates]);
 
   const loadDashboardData = async () => {
     try {
@@ -97,12 +109,7 @@ export default function DashboardPage() {
     { name: 'Absent', value: dashboardData?.absentToday || 0, color: '#f44336' },
   ];
 
-  const monthlyData = [
-    { name: 'Week 1', hours: 180 },
-    { name: 'Week 2', hours: 220 },
-    { name: 'Week 3', hours: 195 },
-    { name: 'Week 4', hours: 210 },
-  ];
+  const monthlyData = dashboardData?.monthlyChartData || [];
 
   if (isLoading) {
     return (

@@ -50,39 +50,70 @@ export default function AttendancePage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+
+  // Default to current day
   const [dateRange, setDateRange] = useState({
-    startDate: '',
-    endDate: ''
+    startDate: format(new Date(), 'yyyy-MM-dd'),
+    endDate: format(new Date(), 'yyyy-MM-dd')
   });
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
-  const { hasRole } = useAuth();
+  const { hasRole, user } = useAuth();
 
   useEffect(() => {
     loadAttendanceData();
-  }, []);
+  }, [page, rowsPerPage, departmentFilter, statusFilter]);
 
   const loadAttendanceData = async () => {
+    setLoading(true);
     try {
       const params = {
         page: page + 1,
         limit: rowsPerPage,
-        startDate: dateRange.startDate || '2020-01-01',
-        endDate: dateRange.endDate || '2030-12-31'
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        search: searchTerm
       };
 
       if (departmentFilter) params.department = departmentFilter;
       if (statusFilter) params.status = statusFilter;
 
-      const response = await authService.getTeamAttendance(params);
+      const isEmployee = !hasRole(['admin', 'manager']);
+
+      // Employees see their own attendance, managers/admins see team attendance
+      const response = hasRole(['admin', 'manager'])
+        ? await authService.getTeamAttendance(params)
+        : await authService.getMyAttendance(params);
+
       if (response.success) {
-        setAttendanceData(response.attendances);
+        // Handle both formats: for /my endpoint, wrap single attendance in array if needed
+        let attendances = Array.isArray(response.attendance)
+          ? response.attendance
+          : response.attendances || [];
+
+        // For employee's own attendance, add user object since /my doesn't include it
+        if (isEmployee && user) {
+          attendances = attendances.map(record => ({
+            ...record,
+            user: {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              department: user.department,
+              position: user.position
+            }
+          }));
+        }
+
+        setAttendanceData(attendances);
+        setTotalCount(response.pagination ? response.pagination.total : attendances.length);
       }
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Failed to load attendance data';
@@ -94,6 +125,16 @@ export default function AttendancePage() {
   };
 
   const handleFilterChange = () => {
+    setPage(0);
+    loadAttendanceData();
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault(); // If used in a form
     setPage(0);
     loadAttendanceData();
   };
@@ -151,13 +192,8 @@ export default function AttendancePage() {
     return `${h}h ${m}m`;
   };
 
-  const filteredAttendance = attendanceData.filter(record => {
-    const matchesSearch = !searchTerm ||
-      record.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.user.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-    return matchesSearch;
-  });
+  // No client-side filtering anymore
+  const filteredAttendance = attendanceData;
 
   if (loading) {
     return (
@@ -191,7 +227,13 @@ export default function AttendancePage() {
                 variant="outlined"
                 size="small"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={handleSearchChange}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    setPage(0);
+                    loadAttendanceData();
+                  }
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -354,7 +396,7 @@ export default function AttendancePage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={filteredAttendance.length}
+            count={totalCount}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={(e, newPage) => setPage(newPage)}

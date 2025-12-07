@@ -54,6 +54,9 @@ import { useAuth } from '../context/AuthContext';
 
 export default function ReportsPage() {
   const [reportData, setReportData] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [deptData, setDeptData] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [reportType, setReportType] = useState('attendance');
   const [dateRange, setDateRange] = useState({
@@ -63,6 +66,21 @@ export default function ReportsPage() {
   const [departmentFilter, setDepartmentFilter] = useState('');
 
   const { hasRole } = useAuth();
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      const response = await authService.getDashboardStats();
+      if (response.success) {
+        setStats(response.stats);
+      }
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
 
   const loadReport = async () => {
     setLoading(true);
@@ -83,6 +101,8 @@ export default function ReportsPage() {
 
       if (response.success) {
         setReportData(response.report || response);
+        if (response.chartData) setChartData(response.chartData);
+        if (response.departmentStats) setDeptData(response.departmentStats);
       }
     } catch (error) {
       toast.error('Failed to load report');
@@ -125,23 +145,9 @@ export default function ReportsPage() {
     }
   };
 
-  // Sample chart data
-  const attendanceChartData = [
-    { name: 'Jan', present: 85, absent: 15 },
-    { name: 'Feb', present: 88, absent: 12 },
-    { name: 'Mar', present: 92, absent: 8 },
-    { name: 'Apr', present: 89, absent: 11 },
-    { name: 'May', present: 94, absent: 6 },
-    { name: 'Jun', present: 91, absent: 9 }
-  ];
-
-  const departmentChartData = [
-    { name: 'Engineering', value: 45, color: '#8884d8' },
-    { name: 'Design', value: 20, color: '#82ca9d' },
-    { name: 'Marketing', value: 15, color: '#ffc658' },
-    { name: 'HR', value: 10, color: '#ff7300' },
-    { name: 'Sales', value: 10, color: '#00ff88' }
-  ];
+  // Dynamic chart data
+  const attendanceChartData = chartData;
+  const departmentChartData = deptData;
 
   const leaveTypeChartData = [
     { name: 'Annual', value: 40 },
@@ -314,10 +320,10 @@ export default function ReportsPage() {
                     Total Employees
                   </Typography>
                   <Typography variant="h4" color="primary">
-                    156
+                    {stats?.totalEmployees || 0}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    +12 this month
+                    Active Users
                   </Typography>
                 </Box>
                 <People fontSize="large" color="primary" />
@@ -335,10 +341,10 @@ export default function ReportsPage() {
                     Attendance Rate
                   </Typography>
                   <Typography variant="h4" color="success">
-                    94.2%
+                    {stats?.attendanceRate || 0}%
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    +2.1% vs last month
+                    Today
                   </Typography>
                 </Box>
                 <TrendingUp fontSize="large" color="success" />
@@ -356,7 +362,7 @@ export default function ReportsPage() {
                     Total Hours
                   </Typography>
                   <Typography variant="h4" color="info">
-                    12,450
+                    {stats?.totalHoursThisMonth || 0}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     This month
@@ -377,7 +383,7 @@ export default function ReportsPage() {
                     Leave Requests
                   </Typography>
                   <Typography variant="h4" color="warning">
-                    23
+                    {stats?.pendingLeaves || 0}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Pending approval

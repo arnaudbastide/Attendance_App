@@ -150,6 +150,16 @@ export const authService = {
   },
 
   // Attendance Management
+  async getMyAttendance(params = {}) {
+    try {
+      const response = await api.get('/attendance/my', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Get my attendance error:', error);
+      throw error;
+    }
+  },
+
   async getTeamAttendance(params = {}) {
     try {
       const response = await api.get('/attendance/team', { params });
@@ -167,6 +177,16 @@ export const authService = {
       return response.data;
     } catch (error) {
       console.error('Get pending leaves error:', error);
+      throw error;
+    }
+  },
+
+  async getMyLeaves(params = {}) {
+    try {
+      const response = await api.get('/leaves/my', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Get my leaves error:', error);
       throw error;
     }
   },

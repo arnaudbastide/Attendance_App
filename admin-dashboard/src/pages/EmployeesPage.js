@@ -58,6 +58,7 @@ export default function EmployeesPage() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
 
   const { user, hasRole } = useAuth();
@@ -75,15 +76,26 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     loadEmployees();
+  }, [page, rowsPerPage, searchTerm]);
+
+  useEffect(() => {
     loadDepartments();
     loadManagers();
   }, []);
 
   const loadEmployees = async () => {
+    setLoading(true);
     try {
-      const response = await authService.getUsers();
+      const params = {
+        page: page + 1, // API uses 1-based indexing
+        limit: rowsPerPage,
+        search: searchTerm
+      };
+
+      const response = await authService.getUsers(params);
       if (response.success) {
         setEmployees(response.users);
+        setTotalCount(response.pagination.total);
       }
     } catch (error) {
       toast.error('Failed to load employees');
@@ -182,7 +194,7 @@ export default function EmployeesPage() {
           ...formData,
           password: 'temp123' // Temporary password
         });
-        
+
         if (response.success) {
           toast.success('Employee added successfully');
           await loadEmployees();
@@ -191,7 +203,7 @@ export default function EmployeesPage() {
         }
       } else {
         const response = await authService.updateUser(selectedEmployee.id, formData);
-        
+
         if (response.success) {
           toast.success('Employee updated successfully');
           await loadEmployees();
@@ -199,7 +211,7 @@ export default function EmployeesPage() {
           toast.error(response.message || 'Failed to update employee');
         }
       }
-      
+
       setDialogOpen(false);
     } catch (error) {
       toast.error('Operation failed');
@@ -233,12 +245,6 @@ export default function EmployeesPage() {
     setSelectedEmployee(null);
   };
 
-  const filteredEmployees = employees.filter(employee =>
-    employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (employee.department && employee.department.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
   const getRoleColor = (role) => {
     switch (role) {
       case 'admin': return 'error';
@@ -250,6 +256,11 @@ export default function EmployeesPage() {
 
   const getStatusColor = (isActive) => {
     return isActive ? 'success' : 'default';
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setPage(0); // Reset to first page on search
   };
 
   return (
@@ -275,7 +286,7 @@ export default function EmployeesPage() {
               variant="outlined"
               size="small"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -285,9 +296,9 @@ export default function EmployeesPage() {
               }}
               sx={{ width: 300 }}
             />
-            
+
             <Typography variant="body2" color="textSecondary">
-              {filteredEmployees.length} employee{filteredEmployees.length !== 1 ? 's' : ''}
+              Total: {totalCount} employees
             </Typography>
           </Box>
 
@@ -304,65 +315,63 @@ export default function EmployeesPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredEmployees
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((employee) => (
-                    <TableRow key={employee.id}>
-                      <TableCell>
-                        <Box display="flex" alignItems="center">
-                          <Avatar sx={{ mr: 2 }}>
-                            {employee.name.charAt(0).toUpperCase()}
-                          </Avatar>
-                          <Box>
-                            <Typography variant="subtitle2">
-                              {employee.name}
-                            </Typography>
-                            <Typography variant="body2" color="textSecondary">
-                              {employee.email}
-                            </Typography>
-                          </Box>
+                {employees.map((employee) => (
+                  <TableRow key={employee.id}>
+                    <TableCell>
+                      <Box display="flex" alignItems="center">
+                        <Avatar sx={{ mr: 2 }}>
+                          {employee.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="subtitle2">
+                            {employee.name}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            {employee.email}
+                          </Typography>
                         </Box>
-                      </TableCell>
-                      <TableCell>
-                        {employee.department || '-'}
-                      </TableCell>
-                      <TableCell>
-                        {employee.position || '-'}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={employee.role.toUpperCase()}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {employee.department || '-'}
+                    </TableCell>
+                    <TableCell>
+                      {employee.position || '-'}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={employee.role.toUpperCase()}
+                        size="small"
+                        color={getRoleColor(employee.role)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={employee.isActive ? 'Active' : 'Inactive'}
+                        size="small"
+                        color={getStatusColor(employee.isActive)}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      {hasRole(['admin', 'manager']) && (
+                        <IconButton
+                          onClick={(e) => handleMenuOpen(e, employee)}
                           size="small"
-                          color={getRoleColor(employee.role)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={employee.isActive ? 'Active' : 'Inactive'}
-                          size="small"
-                          color={getStatusColor(employee.isActive)}
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        {hasRole(['admin', 'manager']) && (
-                          <IconButton
-                            onClick={(e) => handleMenuOpen(e, employee)}
-                            size="small"
-                          >
-                            <MoreVert />
-                          </IconButton>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        >
+                          <MoreVert />
+                        </IconButton>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
 
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
+            rowsPerPageOptions={[5, 10, 25, 50]}
             component="div"
-            count={filteredEmployees.length}
+            count={totalCount}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={(e, newPage) => setPage(newPage)}

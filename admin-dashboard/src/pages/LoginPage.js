@@ -385,7 +385,7 @@ export default function LoginPage() {
                   👔 Manager
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-                  john.manager@roc4tech.com / manager123
+                  manager.engineering@roc4tech.com / manager123
                 </Typography>
               </Box>
               <Box sx={{
@@ -403,7 +403,7 @@ export default function LoginPage() {
                   👤 Employee
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-                  alice@roc4tech.com / employee123
+                  employee1@roc4tech.com / employee123
                 </Typography>
               </Box>
             </Box>
@@ -423,6 +423,6 @@ export default function LoginPage() {
           </Typography>
         </Paper>
       </Container>
-    </Box>
+    </Box >
   );
 }
