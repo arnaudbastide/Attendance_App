@@ -57,7 +57,7 @@ export default function AttendancePage() {
     startDate: '',
     endDate: ''
   });
-  
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -85,7 +85,8 @@ export default function AttendancePage() {
         setAttendanceData(response.attendances);
       }
     } catch (error) {
-      toast.error('Failed to load attendance data');
+      const errorMsg = error.response?.data?.message || 'Failed to load attendance data';
+      toast.error(errorMsg);
       console.error('Error loading attendance data:', error);
     } finally {
       setLoading(false);
@@ -109,7 +110,7 @@ export default function AttendancePage() {
       if (statusFilter) params.status = statusFilter;
 
       const response = await authService.exportAttendanceReport(params);
-      
+
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -118,7 +119,7 @@ export default function AttendancePage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
+
       toast.success('Attendance report exported successfully');
     } catch (error) {
       toast.error('Failed to export attendance report');
@@ -151,10 +152,10 @@ export default function AttendancePage() {
   };
 
   const filteredAttendance = attendanceData.filter(record => {
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       record.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       record.user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesSearch;
   });
 
@@ -200,7 +201,7 @@ export default function AttendancePage() {
                 }}
               />
             </Grid>
-            
+
             <Grid item xs={12} md={2}>
               <FormControl fullWidth size="small">
                 <InputLabel>Department</InputLabel>
@@ -217,7 +218,7 @@ export default function AttendancePage() {
                 </Select>
               </FormControl>
             </Grid>
-            
+
             <Grid item xs={12} md={2}>
               <FormControl fullWidth size="small">
                 <InputLabel>Status</InputLabel>
@@ -234,7 +235,7 @@ export default function AttendancePage() {
                 </Select>
               </FormControl>
             </Grid>
-            
+
             <Grid item xs={12} md={2}>
               <TextField
                 fullWidth
@@ -247,7 +248,7 @@ export default function AttendancePage() {
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
-            
+
             <Grid item xs={12} md={2}>
               <TextField
                 fullWidth
@@ -260,7 +261,7 @@ export default function AttendancePage() {
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
-            
+
             <Grid item xs={12} md={1}>
               <Button
                 variant="contained"
@@ -386,7 +387,7 @@ export default function AttendancePage() {
                   </Box>
                 </Box>
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Date
@@ -395,7 +396,7 @@ export default function AttendancePage() {
                   {format(new Date(selectedAttendance.date), 'EEEE, MMMM d, yyyy')}
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Status
@@ -406,7 +407,7 @@ export default function AttendancePage() {
                   sx={{ mt: 1 }}
                 />
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Clock In
@@ -415,7 +416,7 @@ export default function AttendancePage() {
                   {selectedAttendance.clockIn ? format(new Date(selectedAttendance.clockIn), 'HH:mm:ss') : '--:--:--'}
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Clock Out
@@ -424,7 +425,7 @@ export default function AttendancePage() {
                   {selectedAttendance.clockOut ? format(new Date(selectedAttendance.clockOut), 'HH:mm:ss') : '--:--:--'}
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Total Hours
@@ -433,7 +434,7 @@ export default function AttendancePage() {
                   {formatDuration(selectedAttendance.totalHours)}
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Overtime Hours
@@ -442,7 +443,7 @@ export default function AttendancePage() {
                   {formatDuration(selectedAttendance.overtimeHours || 0)}
                 </Typography>
               </Grid>
-              
+
               {selectedAttendance.notes && (
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" color="textSecondary">
@@ -453,7 +454,7 @@ export default function AttendancePage() {
                   </Typography>
                 </Grid>
               )}
-              
+
               {selectedAttendance.breaks && selectedAttendance.breaks.length > 0 && (
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" color="textSecondary" gutterBottom>
@@ -465,7 +466,7 @@ export default function AttendancePage() {
                         {breakItem.breakType}: {formatDuration(breakItem.totalBreakTime || 0)}
                       </Typography>
                       <Typography variant="caption" color="textSecondary">
-                        {format(new Date(breakItem.breakStart), 'HH:mm')} - 
+                        {format(new Date(breakItem.breakStart), 'HH:mm')} -
                         {breakItem.breakEnd ? format(new Date(breakItem.breakEnd), 'HH:mm') : 'Active'}
                       </Typography>
                     </Box>

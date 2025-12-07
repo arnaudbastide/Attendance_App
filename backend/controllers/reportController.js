@@ -26,9 +26,15 @@ const getAttendanceReport = async (req, res, next) => {
       whereClause.department = department;
     }
 
+    // Format dates to YYYY-MM-DD to avoid SQL/Sequelize issues
+    const formattedStartDate = moment(startDate, ['YYYY-MM-DD', 'MM/DD/YYYY']).format('YYYY-MM-DD');
+    const formattedEndDate = moment(endDate, ['YYYY-MM-DD', 'MM/DD/YYYY']).format('YYYY-MM-DD');
+
+    console.log(`[Report Debug] Formatted Date Range: ${formattedStartDate} to ${formattedEndDate}`);
+
     const attendanceWhere = {
       date: {
-        [Op.between]: [startDate, endDate]
+        [Op.between]: [formattedStartDate, formattedEndDate]
       }
     };
 
@@ -60,8 +66,8 @@ const getAttendanceReport = async (req, res, next) => {
     });
 
     // Calculate total days in the date range
-    const start = moment(startDate);
-    const end = moment(endDate);
+    const start = moment(formattedStartDate);
+    const end = moment(formattedEndDate);
     const totalDaysInRange = end.diff(start, 'days') + 1;
 
     // Process data for report
@@ -79,7 +85,7 @@ const getAttendanceReport = async (req, res, next) => {
       const averageHours = totalDays > 0 ? totalHours / totalDays : 0;
 
       const totalBreakTime = attendances.reduce((sum, a) => {
-        return sum + (a && a.breaks || []).reduce((breakSum, b) => breakSum + (b && b.totalBreakTime || 0), 0);
+        return sum + (a && a.breaks || []).reduce((breakSum, b) => breakSum + (parseFloat(b.totalBreakTime) || 0), 0);
       }, 0);
 
       return {
@@ -131,7 +137,8 @@ const getAttendanceReport = async (req, res, next) => {
       const pdfPath = path.join(uploadDir, `attendance_report_${Date.now()}.pdf`);
       const doc = new PDFDocument();
 
-      doc.pipe(fs.createWriteStream(pdfPath));
+      const stream = fs.createWriteStream(pdfPath);
+      doc.pipe(stream);
 
       doc.fontSize(20).text('Attendance Report', { align: 'center' });
       doc.moveDown();
@@ -154,7 +161,7 @@ const getAttendanceReport = async (req, res, next) => {
 
       doc.end();
 
-      doc.on('finish', () => {
+      stream.on('finish', () => {
         res.download(pdfPath, 'attendance_report.pdf', (err) => {
           if (err) {
             fs.unlinkSync(pdfPath);

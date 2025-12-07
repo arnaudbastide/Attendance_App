@@ -57,8 +57,8 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(false);
   const [reportType, setReportType] = useState('attendance');
   const [dateRange, setDateRange] = useState({
-    startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
-    endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd')
+    startDate: format(new Date(), 'yyyy-MM-dd'),
+    endDate: format(new Date(), 'yyyy-MM-dd')
   });
   const [departmentFilter, setDepartmentFilter] = useState('');
 
@@ -117,7 +117,7 @@ export default function ReportsPage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
+
       toast.success(`${reportType.charAt(0).toUpperCase() + reportType.slice(1)} report exported successfully`);
     } catch (error) {
       toast.error('Failed to export report');
@@ -191,7 +191,7 @@ export default function ReportsPage() {
                 </Select>
               </FormControl>
             </Grid>
-            
+
             <Grid item xs={12} md={2}>
               <TextField
                 fullWidth
@@ -204,7 +204,7 @@ export default function ReportsPage() {
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
-            
+
             <Grid item xs={12} md={2}>
               <TextField
                 fullWidth
@@ -217,7 +217,7 @@ export default function ReportsPage() {
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
-            
+
             {hasRole(['admin', 'manager']) && (
               <Grid item xs={12} md={2}>
                 <FormControl fullWidth size="small">
@@ -236,7 +236,7 @@ export default function ReportsPage() {
                 </FormControl>
               </Grid>
             )}
-            
+
             <Grid item xs={12} md={2}>
               <Button
                 variant="contained"
@@ -272,7 +272,7 @@ export default function ReportsPage() {
             </CardContent>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={4}>
           <Card>
             <CardContent>
@@ -325,7 +325,7 @@ export default function ReportsPage() {
             </CardContent>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={3}>
           <Card>
             <CardContent>
@@ -346,7 +346,7 @@ export default function ReportsPage() {
             </CardContent>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={3}>
           <Card>
             <CardContent>
@@ -367,7 +367,7 @@ export default function ReportsPage() {
             </CardContent>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={3}>
           <Card>
             <CardContent>
@@ -396,7 +396,7 @@ export default function ReportsPage() {
           <Typography variant="h6" gutterBottom>
             {reportType === 'attendance' ? 'Attendance Report' : 'Leave Report'}
           </Typography>
-          
+
           {reportData && (
             <TableContainer>
               <Table>
@@ -466,7 +466,7 @@ export default function ReportsPage() {
               </Table>
             </TableContainer>
           )}
-          
+
           {!reportData && (
             <Box textAlign="center" py={4}>
               <Typography color="textSecondary">
