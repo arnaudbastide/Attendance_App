@@ -49,6 +49,7 @@ const menuItems = [
 export default function Layout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
   const [notifications, setNotifications] = useState([]);
 
   const { user, logout, hasRole } = useAuth();
@@ -68,6 +69,14 @@ export default function Layout({ children }) {
     setAnchorEl(null);
   };
 
+  const handleNotificationOpen = (event) => {
+    setNotificationAnchorEl(event.currentTarget);
+  };
+
+  const handleNotificationClose = () => {
+    setNotificationAnchorEl(null);
+  };
+
   const handleLogout = async () => {
     await logout();
     handleProfileMenuClose();
@@ -84,7 +93,7 @@ export default function Layout({ children }) {
       setNotifications(prev => [{
         id: Date.now(),
         type: 'attendance',
-        message: `${data.user.name} just clocked ${data.type}`,
+        message: `${data.user.name} just clocked ${data.status || 'in'}`,
         timestamp: new Date()
       }, ...prev].slice(0, 5));
     });
@@ -179,12 +188,40 @@ export default function Layout({ children }) {
 
           {/* Notifications */}
           <Tooltip title="Notifications">
-            <IconButton color="inherit">
+            <IconButton color="inherit" onClick={handleNotificationOpen}>
               <Badge badgeContent={notifications.length} color="error">
                 <Notifications />
               </Badge>
             </IconButton>
           </Tooltip>
+
+          <Menu
+            anchorEl={notificationAnchorEl}
+            open={Boolean(notificationAnchorEl)}
+            onClose={handleNotificationClose}
+          >
+            {notifications.length === 0 ? (
+              <MenuItem onClick={handleNotificationClose}>
+                <ListItemText primary="No new notifications" />
+              </MenuItem>
+            ) : (
+              notifications.map((notification) => (
+                <MenuItem key={notification.id} onClick={handleNotificationClose}>
+                  <ListItemText
+                    primary={notification.message}
+                    secondary={notification.timestamp.toLocaleTimeString()}
+                  />
+                </MenuItem>
+              ))
+            )}
+            {notifications.length > 0 && (
+              <MenuItem onClick={() => { setNotifications([]); handleNotificationClose(); }}>
+                <Typography variant="body2" color="primary" sx={{ width: '100%', textAlign: 'center' }}>
+                  Clear All
+                </Typography>
+              </MenuItem>
+            )}
+          </Menu>
 
           {/* User Menu */}
           <Tooltip title="Account settings">

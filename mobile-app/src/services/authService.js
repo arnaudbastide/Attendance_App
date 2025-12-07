@@ -1,7 +1,9 @@
 // mobile-app/src/services/authService.js - Authentication API service
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api'; // Change this to your backend URL
+// Replace with your machine's LAN IP for physical device testing
+// const API_BASE_URL = 'http://localhost:5000/api'; 
+const API_BASE_URL = 'http://192.168.1.10:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -100,7 +102,7 @@ export const authService = {
       const data = {};
       if (location) data.location = location;
       if (notes) data.notes = notes;
-      
+
       const response = await api.post('/attendance/clock-in', data);
       return response.data;
     } catch (error) {
@@ -114,7 +116,7 @@ export const authService = {
       const data = {};
       if (location) data.location = location;
       if (notes) data.notes = notes;
-      
+
       const response = await api.post('/attendance/clock-out', data);
       return response.data;
     } catch (error) {
@@ -137,7 +139,7 @@ export const authService = {
     try {
       const data = { breakType };
       if (notes) data.notes = notes;
-      
+
       const response = await api.post('/attendance/break/start', data);
       return response.data;
     } catch (error) {

@@ -30,7 +30,7 @@ module.exports = {
     },
 
     cors: {
-        origins: [
+        origin: [
             process.env.FRONTEND_URL,
             process.env.MOBILE_APP_URL,
             'http://localhost:3000',

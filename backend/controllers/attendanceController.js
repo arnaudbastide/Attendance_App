@@ -52,6 +52,15 @@ const clockIn = async (req, res, next) => {
       isApproved: false
     });
 
+    // Emit socket event
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('new_attendance', {
+        ...attendance.toJSON(),
+        user: req.user
+      });
+    }
+
     res.json({
       success: true,
       message: 'Clocked in successfully',
@@ -93,6 +102,17 @@ const clockOut = async (req, res, next) => {
       clockOut: clockOutTime,
       totalHours: totalHours.toFixed(2)
     });
+
+    // Emit socket event
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('new_attendance', {
+        ...attendance.toJSON(),
+        clockOut: clockOutTime,
+        status: 'clocked_out', // Virtual status for UI
+        user: req.user
+      });
+    }
 
     res.json({
       success: true,

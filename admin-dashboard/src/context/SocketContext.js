@@ -21,7 +21,12 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (token && user) {
       // Initialize socket connection
-      const newSocket = io('/', {
+      const newSocket = io('http://localhost:5000', {
+        withCredentials: true,
+        extraHeaders: {
+          "my-custom-header": "abcd"
+        },
+        transports: ['websocket', 'polling'], // Prioritize websocket
         auth: {
           token: token
         }

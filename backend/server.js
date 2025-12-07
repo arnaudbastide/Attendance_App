@@ -38,6 +38,8 @@ const io = new Server(server, {
   cors: config.cors
 });
 
+app.set('io', io);
+
 const limiter = rateLimit(config.rateLimit);
 
 // Middleware
@@ -102,7 +104,7 @@ db.authenticate()
     if (process.env.NODE_ENV !== 'test') {
       server.listen(config.port, () => {
         console.log(`Server running on port ${config.port}`);
-        console.log(`WebSocket server running for client at ${config.cors.origins.join(', ')}`);
+        console.log(`WebSocket server running for client at ${config.cors.origin.join(', ')}`);
       });
     }
   })

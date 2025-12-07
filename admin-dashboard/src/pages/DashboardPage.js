@@ -105,8 +105,8 @@ export default function DashboardPage() {
   );
 
   const attendanceData = [
-    { name: 'Present', value: dashboardData?.presentToday || 0, color: '#4caf50' },
-    { name: 'Absent', value: dashboardData?.absentToday || 0, color: '#f44336' },
+    { name: 'Present', value: dashboardData?.presentMonth || 0, color: '#4caf50' },
+    { name: 'Absent', value: dashboardData?.absentMonth || 0, color: '#f44336' },
   ];
 
   const monthlyData = dashboardData?.monthlyChartData || [];
@@ -199,7 +199,7 @@ export default function DashboardPage() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Today's Attendance
+                This Month's Attendance
               </Typography>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>

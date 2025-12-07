@@ -429,11 +429,11 @@ const getDashboardStats = async (req, res, next) => {
 
     // Get recent activities (last 5)
     const recentActivities = await Attendance.findAll({
-      where: userWhereClause,
       include: [
         {
           model: User,
           as: 'user',
+          where: userWhereClause,
           attributes: ['name']
         }
       ],
@@ -464,12 +464,21 @@ const getDashboardStats = async (req, res, next) => {
     // Remove Week 5 if empty (often empty for 28-day months or just depending on start)
     const finalChartData = monthlyChartData.filter(d => d.hours > 0 || d.name !== 'Week 5');
 
+    // Calculate monthly totals
+    const presentMonthRecords = monthAttendance.filter(a => ['present', 'late', 'early_leave'].includes(a.status));
+    const presentMonth = presentMonthRecords.length;
+    // Absent month estimate: (Total Employees * Work Days So Far) - Present Records
+    // Using distinct days in DB as proxy for "Work Days So Far".
+    const absentMonth = Math.max(0, (totalEmployees * distinctDays) - presentMonth);
+
     res.json({
       success: true,
       stats: {
         totalEmployees,
         presentToday,
         absentToday,
+        presentMonth,
+        absentMonth,
         pendingLeaves,
         attendanceRate: totalEmployees > 0 ? ((presentToday / totalEmployees) * 100).toFixed(0) : 0,
         totalHoursThisMonth: Number(totalHoursThisMonth).toFixed(2),
