@@ -21,7 +21,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (token && user) {
       // Initialize socket connection
-      const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:5000', {
+      const newSocket = io('/', {
         auth: {
           token: token
         }
@@ -30,7 +30,7 @@ export const SocketProvider = ({ children }) => {
       newSocket.on('connect', () => {
         setIsConnected(true);
         console.log('Socket connected');
-        
+
         // Join user room for personal updates
         newSocket.emit('join_room', user.id);
       });

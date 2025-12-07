@@ -20,14 +20,14 @@ services:
     networks:
       - roc4tech-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-roc4tech_user} -d ${DB_NAME:-roc4tech_attendance}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-roc4tech_user} -d ${DB_NAME:-roc4tech_attendance}" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
   # Backend API
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: roc4tech-backend
@@ -56,7 +56,7 @@ services:
     volumes:
       - ./backend/uploads:/app/uploads
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:5000/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -64,7 +64,7 @@ services:
 
   # Admin Dashboard
   admin-dashboard:
-    build: 
+    build:
       context: ./admin-dashboard
       dockerfile: Dockerfile
     container_name: roc4tech-admin
@@ -85,8 +85,8 @@ services:
     container_name: roc4tech-nginx
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "4443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
@@ -147,6 +147,7 @@ volumes:
   prometheus_data:
   grafana_data:
   nginx_logs:
+
 
 networks:
   roc4tech-network:

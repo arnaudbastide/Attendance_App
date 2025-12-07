@@ -17,7 +17,7 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 
 export default function ClockInOutButton() {
     const [status, setStatus] = useState('not_clocked_in');
@@ -190,7 +190,7 @@ export default function ClockInOutButton() {
                             variant="contained"
                             size="large"
                             onClick={handleClockIn}
-                            disabled={isLoading || status === 'clocked_out'}
+                            disabled={isLoading}
                             startIcon={<ClockInIcon />}
                             sx={{
                                 bgcolor: 'white',

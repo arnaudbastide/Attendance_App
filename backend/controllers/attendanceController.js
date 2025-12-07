@@ -103,7 +103,8 @@ const getCurrentStatus = async (req, res, next) => {
           model: Break,
           as: 'breaks'
         }
-      ]
+      ],
+      order: [['createdAt', 'DESC']]
     });
 
     let status = 'not_clocked_in';
