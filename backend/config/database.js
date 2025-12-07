@@ -1,16 +1,15 @@
 // backend/config/database.js - Database configuration
 const { Sequelize } = require('sequelize');
-require('dotenv').config({ path: '../.env' });
-
+const config = require('./index');
 const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
+  config.database.name,
+  config.database.user,
+  config.database.password,
   {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+    host: config.database.host,
+    port: config.database.port,
     dialect: 'postgres',
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    logging: config.database.logging,
     pool: {
       max: 5,
       min: 0,

@@ -4,7 +4,7 @@ async function testClockIn() {
     try {
         // 1. Login
         console.log('Logging in as Admin...');
-        const loginRes = await axios.post('http://localhost:8080/api/auth/login', {
+        const loginRes = await axios.post('http://localhost:5000/api/auth/login', {
             email: 'admin@roc4tech.com',
             password: 'admin123'
         });
@@ -13,7 +13,7 @@ async function testClockIn() {
 
         // 2. Clock In
         console.log('Attempting Clock In...');
-        const clockInRes = await axios.post('http://localhost:8080/api/attendance/clock-in', {}, {
+        const clockInRes = await axios.post('http://localhost:5000/api/attendance/clock-in', {}, {
             headers: { Authorization: `Bearer ${token}` }
         });
         console.log('Clock In Success:', clockInRes.data);
