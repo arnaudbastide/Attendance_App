@@ -98,13 +98,17 @@ export default function AttendanceHistoryScreen() {
           <Text style={styles.date}>
             {moment(item.date).format('MMMM D, YYYY')}
           </Text>
-          <Chip
-            mode="outlined"
-            textStyle={{ color: getStatusColor(item.status), fontSize: 12 }}
-            style={[styles.statusChip, { borderColor: getStatusColor(item.status) }]}
-          >
-            {item.status.toUpperCase()}
-          </Chip>
+          <View style={[styles.statusChip, { borderColor: getStatusColor(item.status), borderWidth: 1 }]}>
+            <Text style={{
+              color: getStatusColor(item.status),
+              fontSize: 10,
+              fontWeight: 'bold',
+              includeFontPadding: false,
+              textAlignVertical: 'center'
+            }}>
+              {item.status.toUpperCase()}
+            </Text>
+          </View>
         </View>
 
         <Divider style={styles.divider} />
@@ -116,7 +120,7 @@ export default function AttendanceHistoryScreen() {
               {item.clockIn ? moment(item.clockIn).format('HH:mm') : '--:--'}
             </Text>
           </View>
-          
+
           <View style={styles.timeItem}>
             <Text style={styles.timeLabel}>Clock Out</Text>
             <Text style={styles.timeValue}>
@@ -141,7 +145,7 @@ export default function AttendanceHistoryScreen() {
                   {breakItem.breakType}: {formatDuration(breakItem.totalBreakTime || 0)}
                 </Text>
                 <Text style={styles.breakTime}>
-                  {moment(breakItem.breakStart).format('HH:mm')} - 
+                  {moment(breakItem.breakStart).format('HH:mm')} -
                   {breakItem.breakEnd ? moment(breakItem.breakEnd).format('HH:mm') : 'Active'}
                 </Text>
               </View>
@@ -208,7 +212,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: '#6200ee',
+    backgroundColor: '#000000',
     padding: 20,
     paddingTop: 40,
   },
@@ -242,7 +246,13 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   statusChip: {
-    height: 24,
+    // height: 28, // Removed to allow auto-centering
+    minWidth: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 5, // Add padding for View based chip
+    height: 30,
+    borderRadius: 16,   // Add radius for View based chip
   },
   divider: {
     marginVertical: 10,

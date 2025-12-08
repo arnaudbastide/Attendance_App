@@ -1,5 +1,5 @@
 // backend/controllers/leaveController.js - Leave management controller
-const { Leave, User } = require('../models');
+const { Leave, User, sequelize } = require('../models');
 const { Op } = require('sequelize');
 const moment = require('moment');
 

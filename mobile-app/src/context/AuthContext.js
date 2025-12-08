@@ -32,6 +32,21 @@ export const AuthProvider = ({ children }) => {
         setUser(JSON.parse(storedUser));
         // Set default authorization header
         authService.setAuthToken(storedToken);
+
+        // Fetch fresh profile data
+        try {
+          const response = await authService.getProfile();
+          if (response.success) {
+            setUser(response.user);
+            await SecureStore.setItemAsync('user', JSON.stringify(response.user));
+          } else {
+            // Fallback to stored user if fetch fails
+            setUser(JSON.parse(storedUser));
+          }
+        } catch (error) {
+          console.log('Failed to refresh profile, using stored data');
+          setUser(JSON.parse(storedUser));
+        }
       }
     } catch (error) {
       console.error('Error checking auth state:', error);
@@ -43,19 +58,19 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await authService.login(email, password);
-      
+
       if (response.success) {
         const { token, user } = response;
-        
+
         // Store in secure storage
         await SecureStore.setItemAsync('authToken', token);
         await SecureStore.setItemAsync('user', JSON.stringify(user));
-        
+
         // Update state
         setToken(token);
         setUser(user);
         authService.setAuthToken(token);
-        
+
         return { success: true };
       } else {
         return { success: false, message: response.message };
@@ -71,12 +86,12 @@ export const AuthProvider = ({ children }) => {
       // Clear secure storage
       await SecureStore.deleteItemAsync('authToken');
       await SecureStore.deleteItemAsync('user');
-      
+
       // Clear state
       setToken(null);
       setUser(null);
       authService.setAuthToken(null);
-      
+
       return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
@@ -87,13 +102,13 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (profileData) => {
     try {
       const response = await authService.updateProfile(profileData);
-      
+
       if (response.success) {
         // Update user in storage
         const updatedUser = { ...user, ...response.user };
         await SecureStore.setItemAsync('user', JSON.stringify(updatedUser));
         setUser(updatedUser);
-        
+
         return { success: true, user: updatedUser };
       } else {
         return { success: false, message: response.message };

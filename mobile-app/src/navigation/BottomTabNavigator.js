@@ -2,6 +2,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Platform } from 'react-native';
 
 // Screens
 import DashboardScreen from '../screens/DashboardScreen';
@@ -16,15 +17,15 @@ export default function BottomTabNavigator() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#6200ee',
+        tabBarActiveTintColor: '#000000',
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: {
           backgroundColor: '#ffffff',
           borderTopWidth: 1,
           borderTopColor: '#e0e0e0',
-          paddingBottom: 5,
+          paddingBottom: Platform.OS === 'android' ? 40 : 25,
           paddingTop: 5,
-          height: 60,
+          height: Platform.OS === 'android' ? 90 : 70,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -42,7 +43,7 @@ export default function BottomTabNavigator() {
           ),
         }}
       />
-      
+
       <Tab.Screen
         name="History"
         component={AttendanceHistoryScreen}
@@ -53,7 +54,7 @@ export default function BottomTabNavigator() {
           ),
         }}
       />
-      
+
       <Tab.Screen
         name="Leave"
         component={LeaveRequestScreen}
@@ -64,7 +65,7 @@ export default function BottomTabNavigator() {
           ),
         }}
       />
-      
+
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}

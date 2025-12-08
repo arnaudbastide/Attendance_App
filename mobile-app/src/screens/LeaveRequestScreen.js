@@ -19,7 +19,8 @@ import {
   Modal,
   Portal,
   FAB,
-  ActivityIndicator
+  ActivityIndicator,
+  IconButton
 } from 'react-native-paper';
 import { Calendar } from 'react-native-calendars';
 import { authService } from '../services/authService';
@@ -41,7 +42,7 @@ export default function LeaveRequestScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  
+
   // Form state
   const [selectedLeaveType, setSelectedLeaveType] = useState('annual');
   const [selectedDates, setSelectedDates] = useState({});
@@ -62,7 +63,7 @@ export default function LeaveRequestScreen() {
       if (leavesResponse.success) {
         setLeaves(leavesResponse.leaves);
       }
-      
+
       if (balanceResponse.success) {
         setLeaveBalance(balanceResponse.leaveBalance);
       }
@@ -82,26 +83,26 @@ export default function LeaveRequestScreen() {
 
   const handleDayPress = (day) => {
     const newSelectedDates = { ...selectedDates };
-    
+
     if (newSelectedDates[day.dateString]) {
       delete newSelectedDates[day.dateString];
     } else {
       newSelectedDates[day.dateString] = {
         selected: true,
-        selectedColor: '#6200ee'
+        selectedColor: '#000000'
       };
     }
-    
+
     setSelectedDates(newSelectedDates);
   };
 
   const calculateTotalDays = () => {
     const dates = Object.keys(selectedDates);
     if (dates.length === 0) return 0;
-    
+
     const startDate = moment.min(dates.map(d => moment(d)));
     const endDate = moment.max(dates.map(d => moment(d)));
-    
+
     return endDate.diff(startDate, 'days') + 1;
   };
 
@@ -143,7 +144,8 @@ export default function LeaveRequestScreen() {
       }
     } catch (error) {
       console.error('Error submitting leave request:', error);
-      Alert.alert('Error', 'Failed to submit leave request');
+      const errorMessage = error.response?.data?.message || 'Failed to submit leave request';
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -205,13 +207,17 @@ export default function LeaveRequestScreen() {
               {LEAVE_TYPES.find(t => t.key === item.leaveType)?.label || item.leaveType}
             </Text>
           </View>
-          <Chip
-            mode="outlined"
-            textStyle={{ color: getStatusColor(item.status), fontSize: 12 }}
-            style={[styles.statusChip, { borderColor: getStatusColor(item.status) }]}
-          >
-            {item.status.toUpperCase()}
-          </Chip>
+          <View style={[styles.statusChip, { borderColor: getStatusColor(item.status), borderWidth: 1 }]}>
+            <Text style={{
+              color: getStatusColor(item.status),
+              fontSize: 10,
+              fontWeight: 'bold',
+              includeFontPadding: false, // Fix Android vertical align
+              textAlignVertical: 'center' // Fix Android vertical align
+            }}>
+              {item.status.toUpperCase()}
+            </Text>
+          </View>
         </View>
 
         <Divider style={styles.divider} />
@@ -223,7 +229,7 @@ export default function LeaveRequestScreen() {
               {moment(item.startDate).format('MMM D, YYYY')}
             </Text>
           </View>
-          
+
           <View style={styles.dateItem}>
             <Text style={styles.dateLabel}>End Date</Text>
             <Text style={styles.dateValue}>
@@ -306,6 +312,7 @@ export default function LeaveRequestScreen() {
         style={styles.fab}
         icon="plus"
         onPress={() => setModalVisible(true)}
+        color="white"
       />
 
       <Portal>
@@ -316,7 +323,7 @@ export default function LeaveRequestScreen() {
         >
           <ScrollView>
             <Text style={styles.modalTitle}>New Leave Request</Text>
-            
+
             {/* Leave Type Selection */}
             <Text style={styles.sectionTitle}>Leave Type</Text>
             <View style={styles.leaveTypeGrid}>
@@ -341,11 +348,11 @@ export default function LeaveRequestScreen() {
               markedDates={selectedDates}
               markingType={'multi-dot'}
               theme={{
-                selectedDayBackgroundColor: '#6200ee',
-                todayTextColor: '#6200ee',
+                selectedDayBackgroundColor: '#000000',
+                todayTextColor: '#000000',
               }}
             />
-            
+
             {Object.keys(selectedDates).length > 0 && (
               <Text style={styles.selectedDays}>
                 Selected: {Object.keys(selectedDates).length} day(s)
@@ -378,6 +385,8 @@ export default function LeaveRequestScreen() {
                 onPress={handleSubmitLeaveRequest}
                 loading={isSubmitting}
                 disabled={isSubmitting || Object.keys(selectedDates).length === 0 || !reason.trim()}
+                buttonColor="#000000"
+                textColor="#ffffff"
                 style={styles.modalButton}
               >
                 Submit Request
@@ -396,7 +405,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: '#6200ee',
+    backgroundColor: '#000000',
     padding: 20,
     paddingTop: 40,
   },
@@ -439,7 +448,12 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   statusChip: {
-    height: 24,
+    minWidth: 70,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 0,
+    borderRadius: 16,
   },
   divider: {
     marginVertical: 10,
@@ -488,7 +502,7 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor: '#6200ee',
+    backgroundColor: '#000000',
   },
   modalContainer: {
     backgroundColor: 'white',
@@ -520,7 +534,7 @@ const styles = StyleSheet.create({
   selectedDays: {
     textAlign: 'center',
     marginTop: 10,
-    color: '#6200ee',
+    color: '#000000',
     fontWeight: 'bold',
   },
   reasonInput: {

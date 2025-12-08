@@ -3,6 +3,7 @@ const User = require('./User');
 const Attendance = require('./Attendance');
 const Leave = require('./Leave');
 const Break = require('./Break');
+const sequelize = require('../config/database');
 
 // Define associations
 User.hasMany(Attendance, { foreignKey: 'userId', as: 'attendances' });
@@ -22,6 +23,7 @@ User.belongsTo(User, { foreignKey: 'managerId', as: 'manager' });
 User.hasMany(User, { foreignKey: 'managerId', as: 'subordinates' });
 
 module.exports = {
+  sequelize,
   User,
   Attendance,
   Leave,

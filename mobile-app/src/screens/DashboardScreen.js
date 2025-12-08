@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: '#6200ee',
+    backgroundColor: '#000000',
     padding: 20,
     marginBottom: 10,
   },
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#6200ee',
+    color: '#000000',
   },
   statLabel: {
     fontSize: 12,
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   monthlyStatValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#6200ee',
+    color: '#000000',
     marginBottom: 4,
   },
   monthlyStatLabel: {

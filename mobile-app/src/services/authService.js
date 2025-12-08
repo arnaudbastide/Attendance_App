@@ -3,9 +3,8 @@ import axios from 'axios';
 
 // Replace with your machine's LAN IP for physical device testing
 // const API_BASE_URL = 'http://localhost:5000/api'; 
-// const API_BASE_URL = 'http://192.168.1.10:5000/api';
-// const API_BASE_URL = 'https://busy-crabs-clap.loca.lt/api'; // Tunnel URL
-const API_BASE_URL = 'https://busy-crabs-clap.loca.lt/api';
+// const API_BASE_URL = 'https://busy-crabs-clap.loca.lt/api'; // Tunnel URL (unstable)
+const API_BASE_URL = 'http://192.168.1.10:5000/api'; // Local network (stable)
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -33,10 +32,16 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Clear auth token and redirect to login
-      clearAuthToken();
-      // You might want to navigate to login screen here
+    if (error.response) {
+      console.log('API Error Status:', error.response.status);
+      console.log('API Error Data:', error.response.data);
+      if (error.response.status === 401) {
+        clearAuthToken();
+      }
+    } else if (error.request) {
+      console.log('API No Response:', error.request);
+    } else {
+      console.log('API Request Config Error:', error.message);
     }
     return Promise.reject(error);
   }

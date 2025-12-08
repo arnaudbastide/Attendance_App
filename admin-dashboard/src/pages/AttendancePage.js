@@ -37,7 +37,8 @@ import {
   Visibility,
   Edit,
   CheckCircle,
-  Cancel
+  Cancel,
+  LocationOn
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
@@ -192,6 +193,12 @@ export default function AttendancePage() {
     return `${h}h ${m}m`;
   };
 
+  const openMap = (location) => {
+    if (!location || !location.coords) return;
+    const { latitude, longitude } = location.coords;
+    window.open(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`, '_blank');
+  };
+
   // No client-side filtering anymore
   const filteredAttendance = attendanceData;
 
@@ -330,8 +337,9 @@ export default function AttendancePage() {
                   <TableCell>Clock In</TableCell>
                   <TableCell>Clock Out</TableCell>
                   <TableCell>Total Hours</TableCell>
+                  <TableCell>Location</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+                  <TableCell align="right">Details</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -363,6 +371,30 @@ export default function AttendancePage() {
                     </TableCell>
                     <TableCell>
                       {formatDuration(record.totalHours)}
+                    </TableCell>
+                    <TableCell>
+                      <Box display="flex" gap={1}>
+                        {record.locationIn && (
+                          <IconButton
+                            size="small"
+                            title="Clock In Location"
+                            onClick={() => openMap(record.locationIn)}
+                            color="primary"
+                          >
+                            <LocationOn fontSize="small" />
+                          </IconButton>
+                        )}
+                        {record.locationOut && (
+                          <IconButton
+                            size="small"
+                            title="Clock Out Location"
+                            onClick={() => openMap(record.locationOut)}
+                            color="secondary"
+                          >
+                            <LocationOn fontSize="small" />
+                          </IconButton>
+                        )}
+                      </Box>
                     </TableCell>
                     <TableCell>
                       <Chip
@@ -485,6 +517,44 @@ export default function AttendancePage() {
                   {formatDuration(selectedAttendance.overtimeHours || 0)}
                 </Typography>
               </Grid>
+
+              {selectedAttendance.locationIn && selectedAttendance.locationIn.coords && (
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle2" color="textSecondary">
+                    Clock In Location
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedAttendance.locationIn.coords.latitude.toFixed(6)}, {selectedAttendance.locationIn.coords.longitude.toFixed(6)}
+                  </Typography>
+                  <Button
+                    size="small"
+                    startIcon={<LocationOn />}
+                    onClick={() => openMap(selectedAttendance.locationIn)}
+                    sx={{ mt: 0.5 }}
+                  >
+                    View on Map
+                  </Button>
+                </Grid>
+              )}
+
+              {selectedAttendance.locationOut && selectedAttendance.locationOut.coords && (
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle2" color="textSecondary">
+                    Clock Out Location
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedAttendance.locationOut.coords.latitude.toFixed(6)}, {selectedAttendance.locationOut.coords.longitude.toFixed(6)}
+                  </Typography>
+                  <Button
+                    size="small"
+                    startIcon={<LocationOn />}
+                    onClick={() => openMap(selectedAttendance.locationOut)}
+                    sx={{ mt: 0.5 }}
+                  >
+                    View on Map
+                  </Button>
+                </Grid>
+              )}
 
               {selectedAttendance.notes && (
                 <Grid item xs={12}>

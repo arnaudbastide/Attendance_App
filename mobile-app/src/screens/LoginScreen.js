@@ -24,24 +24,24 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  
+
   const { login } = useAuth();
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Email is invalid';
     }
-    
+
     if (!password) {
       newErrors.password = 'Password is required';
     } else if (password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -52,10 +52,10 @@ export default function LoginScreen() {
     }
 
     setIsLoading(true);
-    
+
     try {
       const result = await login(email.trim(), password);
-      
+
       if (!result.success) {
         Alert.alert('Login Failed', result.message || 'Invalid credentials');
       }
@@ -78,7 +78,7 @@ export default function LoginScreen() {
       >
         <View style={styles.logoContainer}>
           <Image
-            source={require('../../assets/logo.png')}
+            source={require('../../assets/logo.jpg')}
             style={styles.logo}
             resizeMode="contain"
           />
@@ -98,6 +98,7 @@ export default function LoginScreen() {
               autoCorrect={false}
               style={styles.input}
               error={!!errors.email}
+              theme={{ colors: { primary: '#000000', outline: '#000000' } }}
               left={<TextInput.Icon icon="email" />}
             />
             {errors.email && (
@@ -114,6 +115,7 @@ export default function LoginScreen() {
               secureTextEntry
               style={styles.input}
               error={!!errors.password}
+              theme={{ colors: { primary: '#000000', outline: '#000000' } }}
               left={<TextInput.Icon icon="lock" />}
             />
             {errors.password && (
@@ -128,6 +130,8 @@ export default function LoginScreen() {
               style={styles.loginButton}
               disabled={isLoading}
               loading={isLoading}
+              buttonColor="#000000"
+              textColor="#ffffff"
             >
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>

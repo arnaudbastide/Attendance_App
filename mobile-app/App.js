@@ -1,8 +1,9 @@
 // mobile-app/App.js - Main App component
+console.log("--- APP ENTRY POINT REACHED ---"); // Debug Log
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Provider as PaperProvider } from 'react-native-paper';
+import { Provider as PaperProvider, MD3LightTheme } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
@@ -20,6 +21,17 @@ import ProfileScreen from './src/screens/ProfileScreen';
 
 // Navigation
 import BottomTabNavigator from './src/navigation/BottomTabNavigator';
+
+const theme = {
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    primary: '#000000',
+    onPrimary: '#ffffff',
+    secondary: '#333333',
+    background: '#f5f5f5',
+  },
+};
 
 const Stack = createStackNavigator();
 
@@ -46,7 +58,7 @@ function AppNavigator() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <PaperProvider>
+      <PaperProvider theme={theme}>
         <AuthProvider>
           <LocationProvider>
             <AppNavigator />

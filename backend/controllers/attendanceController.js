@@ -10,6 +10,8 @@ const clockIn = async (req, res, next) => {
     if (!req.user) console.log('[ClockIn Debug] No user in request!');
     const userId = req.user.id;
     const today = moment().format('YYYY-MM-DD');
+    console.log('[ClockIn Debug] Request Body:', JSON.stringify(req.body));
+    console.log('[ClockIn Debug] Location:', req.body.location);
 
     // Check for approved leave
     const onLeave = await Leave.findOne({
@@ -53,7 +55,8 @@ const clockIn = async (req, res, next) => {
       clockIn: new Date(),
       date: today,
       status: 'present',
-      isApproved: false
+      isApproved: false,
+      locationIn: req.body.location || null // Save locationIn
     });
     console.log(`[ClockIn Debug] Success - ID: ${attendance.id}`);
 
@@ -105,7 +108,8 @@ const clockOut = async (req, res, next) => {
     // Update attendance record
     await attendance.update({
       clockOut: clockOutTime,
-      totalHours: totalHours.toFixed(2)
+      totalHours: totalHours.toFixed(2),
+      locationOut: req.body.location || null // Save locationOut
     });
 
     // Emit socket event
@@ -243,7 +247,7 @@ const getMyAttendance = async (req, res, next) => {
 
     res.json({
       success: true,
-      attendance: attendance.rows,
+      attendances: attendance.rows,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),

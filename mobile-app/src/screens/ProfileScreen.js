@@ -26,7 +26,7 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -153,13 +153,13 @@ export default function ProfileScreen() {
 
       {/* Profile Information */}
       <Card style={styles.profileCard}>
-        <Card.Title 
-          title="Profile Information" 
+        <Card.Title
+          title="Profile Information"
           right={() => (
             <Button
               mode="text"
               onPress={() => setIsEditing(!isEditing)}
-              textColor="#6200ee"
+              textColor="#000000"
             >
               {isEditing ? 'Cancel' : 'Edit'}
             </Button>
@@ -273,8 +273,8 @@ export default function ProfileScreen() {
             title="Account Status"
             description={user.isActive ? 'Active' : 'Inactive'}
             left={props => (
-              <List.Icon 
-                {...props} 
+              <List.Icon
+                {...props}
                 icon={user.isActive ? "check-circle" : "close-circle"}
                 color={user.isActive ? "#4CAF50" : "#f44336"}
               />
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: '#6200ee',
+    backgroundColor: '#000000',
     padding: 20,
     paddingTop: 40,
   },

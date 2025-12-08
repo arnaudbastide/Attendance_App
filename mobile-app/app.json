@@ -4,12 +4,12 @@
     "slug": "roc4tech-attendance-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.jpg",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/logo.jpg",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -20,8 +20,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/logo.jpg",
+        "backgroundColor": "#000000"
       },
       "package": "com.roc4tech.attendance",
       "permissions": [
