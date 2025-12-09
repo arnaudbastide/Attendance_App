@@ -30,7 +30,7 @@ const getUsers = async (req, res, next) => {
       whereClause.role = role;
     }
 
-    const users = await User.findAndCountAll({
+    const { count, rows: users } = await User.findAndCountAll({
       where: whereClause,
       attributes: { exclude: ['password'] },
       include: [
@@ -45,16 +45,121 @@ const getUsers = async (req, res, next) => {
       offset: parseInt(offset)
     });
 
-    res.json({
-      success: true,
-      users: users.rows,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: users.count,
-        pages: Math.ceil(users.count / limit)
-      }
-    });
+    // --- Inject Real-Time Status & Location ---
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const userIds = users.map(u => u.id);
+
+      // Models might need to be required if not available in scope
+      const { Attendance, Leave } = require('../models');
+
+      // 1. Fetch Today's Attendance
+      const attendances = await Attendance.findAll({
+        where: {
+          userId: { [Op.in]: userIds },
+          date: today
+        },
+        order: [['clockIn', 'DESC']]
+      });
+
+      // 2. Fetch Active Leaves
+      const leaves = await Leave.findAll({
+        where: {
+          userId: { [Op.in]: userIds },
+          status: 'approved',
+          [Op.and]: [
+            { startDate: { [Op.lte]: today } },
+            { endDate: { [Op.gte]: today } }
+          ]
+        }
+      });
+
+      // 3. Map Data
+      const usersWithStatus = users.map(user => {
+        const userJson = user.toJSON();
+
+        // Default Status
+        let status = user.isActive ? 'absent' : 'inactive';
+        let lastLocation = null;
+
+        // Leave Check
+        const userLeave = leaves.find(l => l.userId === user.id);
+        if (userLeave && user.isActive) {
+          status = 'on_leave';
+        }
+
+        // Attendance Check (Latest record)
+        const userAttendances = attendances.filter(a => a.userId === user.id);
+
+        let totalDurationMs = 0; // Duration in milliseconds
+
+        if (userAttendances.length > 0) {
+          const latest = userAttendances[0];
+
+          if (!latest.clockOut) {
+            status = 'present';
+          } else {
+            // Clocked out but was present today. logic says 'absent' if not currently in.
+            status = 'absent';
+          }
+
+          // Location Priority: Out > In (Shows where they left or where they are)
+          if (latest.clockOut && latest.locationOut) {
+            lastLocation = latest.locationOut;
+          } else if (latest.locationIn) {
+            lastLocation = latest.locationIn;
+          }
+
+          // Calculate Total Hours for today
+          userAttendances.forEach(att => {
+            const start = new Date(att.clockIn).getTime();
+            const end = att.clockOut ? new Date(att.clockOut).getTime() : new Date().getTime();
+
+            if (!isNaN(start) && !isNaN(end) && end > start) {
+              totalDurationMs += (end - start);
+            }
+          });
+        }
+
+        // Format duration to "Xh Ym"
+        const totalMinutes = Math.floor(totalDurationMs / (1000 * 60));
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        const totalHoursFormatted = `${hours}h ${minutes}m`;
+
+        userJson.currentStatus = status;
+        userJson.lastLocation = lastLocation;
+        userJson.totalHoursToday = totalHoursFormatted;
+
+        return userJson;
+      });
+
+      return res.json({
+        success: true,
+        users: usersWithStatus,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: count,
+          pages: Math.ceil(count / limit)
+        }
+      });
+
+    } catch (innerError) {
+      console.error('Error injecting status:', innerError);
+      // Fallback if something fails in injection
+      return res.json({
+        success: true,
+        users: users,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: count,
+          pages: Math.ceil(count / limit)
+        }
+      });
+    }
+
   } catch (error) {
     next(error);
   }

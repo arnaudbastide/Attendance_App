@@ -61,6 +61,8 @@ export default function EmployeesPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const [departmentFilter, setDepartmentFilter] = useState('');
+
   const { user, hasRole } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -76,7 +78,7 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     loadEmployees();
-  }, [page, rowsPerPage, searchTerm]);
+  }, [page, rowsPerPage, searchTerm, departmentFilter]);
 
   useEffect(() => {
     loadDepartments();
@@ -89,7 +91,8 @@ export default function EmployeesPage() {
       const params = {
         page: page + 1, // API uses 1-based indexing
         limit: rowsPerPage,
-        search: searchTerm
+        search: searchTerm,
+        department: departmentFilter
       };
 
       const response = await authService.getUsers(params);
@@ -254,13 +257,43 @@ export default function EmployeesPage() {
     }
   };
 
-  const getStatusColor = (isActive) => {
-    return isActive ? 'success' : 'default';
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'present': return 'success';
+      case 'absent': return 'default';
+      case 'on_leave': return 'info';
+      case 'inactive': return 'error';
+      default: return 'default';
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'present': return 'Present';
+      case 'absent': return 'Absent';
+      case 'on_leave': return 'On Leave';
+      case 'inactive': return 'Inactive';
+      default: return 'Unknown';
+    }
   };
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     setPage(0); // Reset to first page on search
+  };
+
+  const openMap = (location) => {
+    if (!location) return;
+    const latitude = location.latitude || (location.coords && location.coords.latitude);
+    const longitude = location.longitude || (location.coords && location.coords.longitude);
+
+    // Use looser check for falsy values like 0
+    if (latitude != null && longitude != null) {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`, '_blank');
+    } else {
+      console.log('Invalid coordinates for map:', location);
+      toast.error('Invalid location coordinates');
+    }
   };
 
   return (
@@ -281,21 +314,38 @@ export default function EmployeesPage() {
       <Card>
         <CardContent>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <TextField
-              placeholder="Search employees..."
-              variant="outlined"
-              size="small"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ width: 300 }}
-            />
+            <Box display="flex" gap={2} alignItems="center">
+              <TextField
+                placeholder="Search employees..."
+                variant="outlined"
+                size="small"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ width: 300 }}
+              />
+
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>Department</InputLabel>
+                <Select
+                  value={departmentFilter}
+                  onChange={(e) => setDepartmentFilter(e.target.value)}
+                  label="Department"
+                >
+                  <MenuItem value="">All Departments</MenuItem>
+                  <MenuItem value="Engineering">Engineering</MenuItem>
+                  <MenuItem value="Design">Design</MenuItem>
+                  <MenuItem value="Marketing">Marketing</MenuItem>
+                  <MenuItem value="HR">HR</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
 
             <Typography variant="body2" color="textSecondary">
               Total: {totalCount} employees
@@ -309,8 +359,9 @@ export default function EmployeesPage() {
                   <TableCell>Employee</TableCell>
                   <TableCell>Department</TableCell>
                   <TableCell>Position</TableCell>
-                  <TableCell>Role</TableCell>
                   <TableCell>Status</TableCell>
+                  <TableCell>Total Hours</TableCell>
+                  <TableCell>Location</TableCell>
                   <TableCell align="right">Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -340,17 +391,36 @@ export default function EmployeesPage() {
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={employee.role.toUpperCase()}
+                        label={getStatusLabel(employee.currentStatus)}
                         size="small"
-                        color={getRoleColor(employee.role)}
+                        color={getStatusColor(employee.currentStatus)}
                       />
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={employee.isActive ? 'Active' : 'Inactive'}
-                        size="small"
-                        color={getStatusColor(employee.isActive)}
-                      />
+                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                        {employee.totalHoursToday || '0h 0m'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {employee.lastLocation ? (
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <IconButton
+                            size="small"
+                            onClick={() => openMap(employee.lastLocation)}
+                            color="primary"
+                            title="View on Map"
+                          >
+                            <svg style={{ width: '20px', height: '20px' }} viewBox="0 0 24 24">
+                              <path fill="currentColor" d="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13c0,-3.87 -3.13,-7 -7,-7zM12,11.5c-1.38,0 -2.5,-1.12 -2.5,-2.5s1.12,-2.5 2.5,-2.5 2.5,1.12 2.5,2.5 -1.12,2.5 -2.5,2.5z" />
+                            </svg>
+                          </IconButton>
+                          <Typography variant="caption" sx={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {employee.lastLocation.address || "View Map"}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Typography variant="caption" color="textSecondary">-</Typography>
+                      )}
                     </TableCell>
                     <TableCell align="right">
                       {hasRole(['admin', 'manager']) && (

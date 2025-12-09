@@ -338,11 +338,11 @@ const getTeamAttendance = async (req, res, next) => {
     const attendanceMap = new Map();
     attendances.forEach(att => {
       const key = `${att.userId}-${att.date}`;
-      attendanceMap.set(key, att);
+      if (!attendanceMap.has(key)) {
+        attendanceMap.set(key, []);
+      }
+      attendanceMap.get(key).push(att);
     });
-
-    const leaveMap = new Map(); // Optimize checking? Leaves are ranges, so Map might be harder unless we explode them first.
-    // For leaves, we can just filter for current users. Since leaves are few, array.find is okay, BUT proper date logic is key.
 
     const daysDiff = qEnd.diff(qStart, 'days') + 1;
     console.log(`[DEBUG] Date Range: ${daysDiff} days. Users: ${allUsers.length}`);
@@ -352,18 +352,29 @@ const getTeamAttendance = async (req, res, next) => {
 
       for (const user of allUsers) {
         const attKey = `${user.id}-${currentDate}`;
-        const attRecord = attendanceMap.get(attKey);
+        const attRecords = attendanceMap.get(attKey);
 
         // Check for leave with correct date logic
         const leaveRecord = leaves.find(l =>
           moment(currentDate).isBetween(l.startDate, l.endDate, null, '[]') && l.userId === user.id
         );
 
-        if (attRecord) {
-          // Real attendance record
-          combinedRecords.push({
-            ...attRecord.toJSON(),
-            user: user.toJSON()
+        if (attRecords && attRecords.length > 0) {
+          // Real attendance records - Push ALL of them
+          attRecords.forEach(attRecord => {
+            let recordData = attRecord.toJSON();
+
+            // Calculate live hours for active sessions
+            if (!recordData.clockOut) {
+              const activeHours = moment().diff(moment(recordData.clockIn), 'hours', true);
+              recordData.totalHours = activeHours.toFixed(2);
+              // Ensure we don't send null/zero if it's just started
+            }
+
+            combinedRecords.push({
+              ...recordData,
+              user: user.toJSON()
+            });
           });
         } else if (leaveRecord) {
           // User is ON LEAVE

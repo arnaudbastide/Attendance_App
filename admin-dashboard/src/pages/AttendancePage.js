@@ -194,9 +194,16 @@ export default function AttendancePage() {
   };
 
   const openMap = (location) => {
-    if (!location || !location.coords) return;
-    const { latitude, longitude } = location.coords;
-    window.open(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`, '_blank');
+    if (!location) return;
+    const latitude = location.latitude ?? location.coords?.latitude;
+    const longitude = location.longitude ?? location.coords?.longitude;
+
+    if (latitude != null && longitude != null) {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`, '_blank');
+    } else {
+      console.warn('Invalid coords:', location);
+      toast.error('Invalid location data');
+    }
   };
 
   // No client-side filtering anymore
@@ -518,13 +525,19 @@ export default function AttendancePage() {
                 </Typography>
               </Grid>
 
-              {selectedAttendance.locationIn && selectedAttendance.locationIn.coords && (
+              {selectedAttendance.locationIn && (
                 <Grid item xs={12} md={6}>
                   <Typography variant="subtitle2" color="textSecondary">
                     Clock In Location
                   </Typography>
-                  <Typography variant="body1">
-                    {selectedAttendance.locationIn.coords.latitude.toFixed(6)}, {selectedAttendance.locationIn.coords.longitude.toFixed(6)}
+                  {selectedAttendance.locationIn.address && (
+                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                      {selectedAttendance.locationIn.address}
+                    </Typography>
+                  )}
+                  <Typography variant="body2">
+                    {(selectedAttendance.locationIn.latitude || selectedAttendance.locationIn.coords?.latitude || 0).toFixed(6)},
+                    {(selectedAttendance.locationIn.longitude || selectedAttendance.locationIn.coords?.longitude || 0).toFixed(6)}
                   </Typography>
                   <Button
                     size="small"
@@ -537,13 +550,19 @@ export default function AttendancePage() {
                 </Grid>
               )}
 
-              {selectedAttendance.locationOut && selectedAttendance.locationOut.coords && (
+              {selectedAttendance.locationOut && (
                 <Grid item xs={12} md={6}>
                   <Typography variant="subtitle2" color="textSecondary">
                     Clock Out Location
                   </Typography>
-                  <Typography variant="body1">
-                    {selectedAttendance.locationOut.coords.latitude.toFixed(6)}, {selectedAttendance.locationOut.coords.longitude.toFixed(6)}
+                  {selectedAttendance.locationOut.address && (
+                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                      {selectedAttendance.locationOut.address}
+                    </Typography>
+                  )}
+                  <Typography variant="body2">
+                    {(selectedAttendance.locationOut.latitude || selectedAttendance.locationOut.coords?.latitude || 0).toFixed(6)},
+                    {(selectedAttendance.locationOut.longitude || selectedAttendance.locationOut.coords?.longitude || 0).toFixed(6)}
                   </Typography>
                   <Button
                     size="small"

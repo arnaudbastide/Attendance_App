@@ -1,5 +1,6 @@
 // mobile-app/src/screens/LeaveRequestScreen.js - Leave request management screen
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   StyleSheet,
@@ -8,33 +9,7 @@ import {
   Alert,
   Platform
 } from 'react-native';
-import {
-  Card,
-  Text,
-  Button,
-  TextInput,
-  Surface,
-  Chip,
-  Divider,
-  Modal,
-  Portal,
-  FAB,
-  ActivityIndicator,
-  IconButton
-} from 'react-native-paper';
-import { Calendar } from 'react-native-calendars';
-import { authService } from '../services/authService';
-import moment from 'moment';
-
-const LEAVE_TYPES = [
-  { key: 'annual', label: 'Annual Leave', icon: 'beach' },
-  { key: 'sick', label: 'Sick Leave', icon: 'hospital' },
-  { key: 'personal', label: 'Personal Leave', icon: 'account' },
-  { key: 'maternity', label: 'Maternity Leave', icon: 'baby' },
-  { key: 'paternity', label: 'Paternity Leave', icon: 'baby' },
-  { key: 'bereavement', label: 'Bereavement', icon: 'candle' },
-  { key: 'unpaid', label: 'Unpaid Leave', icon: 'cash-remove' }
-];
+// ... existing imports ...
 
 export default function LeaveRequestScreen() {
   const [leaves, setLeaves] = useState([]);
@@ -49,9 +24,11 @@ export default function LeaveRequestScreen() {
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    loadLeaveData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadLeaveData();
+    }, [])
+  );
 
   const loadLeaveData = async () => {
     try {
